@@ -44,6 +44,6 @@ final readonly class Action
                 ->withHeader('Location', $this->urlGenerator->generate('admin/category/index'));
         }
 
-        return $this->viewRenderer->render(__DIR__.'/template', ['form'=>$form]);
+        return $this->viewRenderer->render(__DIR__.'/template', ['form'=>$form, 'category'=>$category]);
     }
 }
