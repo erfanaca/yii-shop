@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Product\CreateProductForm;
+use App\Product\Product;
+use App\Product\UpdateProductForm;
 use Yiisoft\FormModel\Field;
 use Yiisoft\Html\Html;
 use Yiisoft\Router\UrlGeneratorInterface;
@@ -10,16 +11,17 @@ use Yiisoft\View\WebView;
 use Yiisoft\Yii\View\Renderer\Csrf;
 
 /**
- * @var CreateProductForm $form
+ * @var UpdateProductForm $form
+ * @var Product $product
  * @var WebView $this
  * @var UrlGeneratorInterface $urlGenerator
  * @var Csrf $csrf
  */
 
-$this->setTitle('Create Product');
+$this->setTitle('Edit Product');
 
 $htmlForm = Html::form()
-    ->post($urlGenerator->generate('admin/product/create'))
+    ->post($urlGenerator->generate('admin/product/edit', ['id' => $product->getId()]))
     ->csrf($csrf);
 
 $inputClass = implode(' ', [
@@ -49,8 +51,8 @@ $errorClass = 'mt-1.5 text-sm text-red-600';
 <div class="px-4 py-12">
     <div class="mx-auto w-full max-w-2xl">
         <div class="mb-8">
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Create Product</h1>
-            <p class="mt-2 text-sm text-gray-500">Add a new product to your catalog</p>
+            <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Edit Product</h1>
+            <p class="mt-2 text-sm text-gray-500">Update product information</p>
         </div>
 
         <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
@@ -99,7 +101,7 @@ $errorClass = 'mt-1.5 text-sm text-red-600';
                         type="submit"
                         class="cursor-pointer rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
                     >
-                        Create Product
+                        Save Changes
                     </button>
 
                     <a

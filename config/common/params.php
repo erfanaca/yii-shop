@@ -40,12 +40,12 @@ return [
     'yiisoft/db-mysql' => [
         'dsn' => new Dsn(
             'mysql',
-            '127.0.0.1',
-            'shop',
-            '3306',
+            $_ENV['DB_HOST'],
+            $_ENV['DB_NAME'],
+            $_ENV['DB_PORT'],
             ['charset' => 'utf8mb4'],
         ),
-        'username' => 'shop_admin',
-        'password' => '1234',
+        'username' => $_ENV['DB_USER'],
+        'password' => $_ENV['DB_PASSWORD'],
     ],
 ];

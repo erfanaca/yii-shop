@@ -2,14 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Web\Admin\Product\Create;
+namespace App\Web\Admin\Product\Edit;
 
-use App\Product\CreateProductForm;
+use App\Product\ProductRepository;
 use App\Product\ProductService;
+use App\Product\UpdateProductForm;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Yiisoft\FormModel\FormHydrator;
+use Yiisoft\Http\Status;
+use Yiisoft\Router\HydratorAttribute\RouteArgument;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
@@ -18,18 +21,39 @@ final readonly class Action
     public function __construct(
         private WebViewRenderer $viewRenderer,
         private FormHydrator $formHydrator,
+        private ProductRepository $products,
         private ProductService $productService,
         private ResponseFactoryInterface $responseFactory,
         private UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function __invoke(ServerRequestInterface $request, #[RouteArgument] int $id): ResponseInterface
     {
-        $form = new CreateProductForm();
+        $product = $this->products->findById($id);
+
+        if ($product === null) {
+            return $this->responseFactory->createResponse(Status::NOT_FOUND);
+        }
+
+        $form = new UpdateProductForm();
+
+        if ($request->getMethod() === 'GET') {
+            $this->formHydrator->populate(
+                $form,
+                [
+                    'title' => $product->getTitle(),
+                    'description' => $product->getDescription(),
+                    'quantity' => $product->getQuantity(),
+                    'price' => $product->getPrice(),
+                ],
+                scope: '',
+            );
+        }
 
         if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
-            $this->productService->create(
+            $this->productService->update(
+                product: $product,
                 title: $form->getTitle() ?? '',
                 description: $form->getDescription(),
                 quantity: $form->getQuantity() ?? 0,
@@ -46,6 +70,7 @@ final readonly class Action
 
         return $this->viewRenderer->render(__DIR__ . '/template', [
             'form' => $form,
+            'product' => $product,
         ]);
     }
 }

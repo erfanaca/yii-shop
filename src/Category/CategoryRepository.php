@@ -4,35 +4,84 @@ declare(strict_types=1);
 
 namespace App\Category;
 
+use DateTimeImmutable;
+use DateTimeInterface;
+use Yiisoft\Db\Connection\ConnectionInterface;
+
 final class CategoryRepository
 {
+    public function __construct(
+        private readonly ConnectionInterface $db,
+    ) {
+    }
+
     /**
      * @return Category[]
      */
     public function findAll(): array
     {
-        return Category::query()->all();
+        $rows = $this->db
+            ->createQuery()
+            ->from('categories')
+            ->all();
+
+        return array_map($this->createCategoryFromRow(...), $rows);
     }
 
     public function findById(int $id): ?Category
     {
-        return Category::query()->findByPk($id);
+        $row = $this->db
+            ->createQuery()
+            ->from('categories')
+            ->where(['id' => $id])
+            ->limit(1)
+            ->one();
+
+        if ($row === null || $row === false) {
+            return null;
+        }
+
+        return $this->createCategoryFromRow($row);
     }
 
     public function findByTitle(string $title): ?Category
     {
-        return Category::query()
+        $row = $this->db
+            ->createQuery()
+            ->from('categories')
             ->where(['title' => $title])
+            ->limit(1)
             ->one();
+
+        if ($row === null || $row === false) {
+            return null;
+        }
+
+        return $this->createCategoryFromRow($row);
     }
 
-    public function save(Category $category): void
+    private function createCategoryFromRow(array $row): Category
     {
-        $category->save();
+        return new Category(
+            id: (int) $row['id'],
+            title: (string) $row['title'],
+            createdAt: $this->toDateTimeImmutable($row['created_at']),
+            updatedAt: $row['updated_at'] === null
+                ? null
+                : $this->toDateTimeImmutable($row['updated_at']),
+        );
     }
 
-    public function delete(Category $category): void
+    private function toDateTimeImmutable(mixed $value): DateTimeImmutable
     {
-        $category->delete();
+        if ($value instanceof DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return DateTimeImmutable::createFromInterface($value);
+        }
+
+        return new DateTimeImmutable((string) $value);
     }
 }

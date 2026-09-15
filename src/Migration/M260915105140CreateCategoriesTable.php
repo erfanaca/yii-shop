@@ -30,6 +30,6 @@ final class M260915105140CreateCategoriesTable implements RevertibleMigrationInt
 
     public function down(MigrationBuilder $b): void
     {
-        // TODO: Implement the logic to revert the migration.
+        $b->dropTable('categories');
     }
 }

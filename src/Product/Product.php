@@ -4,54 +4,53 @@ declare(strict_types=1);
 
 namespace App\Product;
 
-use App\Category\Category;
-use Yiisoft\ActiveRecord\ActiveQuery;
-use Yiisoft\ActiveRecord\ActiveRecord;
 use DateTimeImmutable;
 
-final class Product extends ActiveRecord
+final class Product
 {
-    public int $id;
-
-    public string $title;
-
-    public ?string $description = null;
-
-    public string|int $quantity = 0;
-
-    public string $price;
-
-    public ?DateTimeImmutable $created_at; 
-
-    public ?DateTimeImmutable $updated_at;
-
-    public function tableName(): string
-    {
-        return 'products';
+    public function __construct(
+        private readonly int $id,
+        private readonly string $title,
+        private readonly ?string $description,
+        private readonly int $quantity,
+        private readonly string $price,
+        private readonly DateTimeImmutable $createdAt,
+        private readonly ?DateTimeImmutable $updatedAt,
+    ) {
     }
 
-    /**
-     * @return ActiveQuery<ProductImage>
-     */
-    public function images(): ActiveQuery
+    public function getId(): int
     {
-        return $this->hasMany(
-            ProductImage::class,
-            ['product_id' => 'id'],
-        );
+        return $this->id;
     }
 
-    /**
-     * @return ActiveQuery<Category>
-     */
-    public function categories(): ActiveQuery
+    public function getTitle(): string
     {
-        return $this->hasMany(
-            Category::class,
-            ['id' => 'category_id'],
-        )->viaTable(
-            'product_categories',
-            ['product_id' => 'id'],
-        );
+        return $this->title;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function getQuantity(): int
+    {
+        return $this->quantity;
+    }
+
+    public function getPrice(): string
+    {
+        return $this->price;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 }

@@ -4,36 +4,47 @@ declare(strict_types=1);
 
 namespace App\Product;
 
-use Yiisoft\ActiveRecord\ActiveQuery;
-use Yiisoft\ActiveRecord\ActiveRecord;
+use DateTimeImmutable;
 
-final class ProductImage extends ActiveRecord
+final class ProductImage
 {
-    public int $id;
-
-    public int $product_id;
-
-    public string $path;
-
-    public int $sort_order = 0;
-
-    public string $created_at;
-
-    public ?string $updated_at = null;
-
-    public function tableName(): string
-    {
-        return 'product_images';
+    public function __construct(
+        private readonly int $id,
+        private readonly int $productId,
+        private readonly string $path,
+        private readonly int $sortOrder,
+        private readonly DateTimeImmutable $createdAt,
+        private readonly ?DateTimeImmutable $updatedAt,
+    ) {
     }
 
-    /**
-     * @return ActiveQuery<Product>
-     */
-    public function product(): ActiveQuery
+    public function getId(): int
     {
-        return $this->hasOne(
-            Product::class,
-            ['id' => 'product_id'],
-        );
+        return $this->id;
+    }
+
+    public function getProductId(): int
+    {
+        return $this->productId;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 }

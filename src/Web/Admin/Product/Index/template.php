@@ -5,10 +5,14 @@ declare(strict_types=1);
 use App\Product\Product;
 use Yiisoft\Html\Html;
 use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\View\WebView;
+use Yiisoft\Yii\View\Renderer\Csrf;
 
 /**
  * @var Product[] $products
+ * @var WebView $this
  * @var UrlGeneratorInterface $urlGenerator
+ * @var Csrf $csrf
  */
 
 $this->setTitle('Products');
@@ -31,24 +35,14 @@ $buttonClass = implode(' ', [
     'focus:ring-gray-900',
     'focus:ring-offset-2',
 ]);
-
-$linkClass = 'font-medium text-gray-900 hover:underline';
 ?>
 
 <div class="px-4 py-12">
-
     <div class="mx-auto w-full max-w-6xl">
-
         <div class="mb-8 flex items-center justify-between gap-4">
-
             <div>
-                <h1 class="text-2xl font-semibold tracking-tight text-gray-900">
-                    Products
-                </h1>
-
-                <p class="mt-2 text-sm text-gray-500">
-                    Manage your products
-                </p>
+                <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Products</h1>
+                <p class="mt-2 text-sm text-gray-500">Manage your products</p>
             </div>
 
             <a
@@ -57,22 +51,13 @@ $linkClass = 'font-medium text-gray-900 hover:underline';
             >
                 Create Product
             </a>
-
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-
             <?php if ($products === []): ?>
-
                 <div class="px-6 py-12 text-center">
-
-                    <h2 class="text-sm font-medium text-gray-900">
-                        No products found
-                    </h2>
-
-                    <p class="mt-1 text-sm text-gray-500">
-                        Create your first product to get started.
-                    </p>
+                    <h2 class="text-sm font-medium text-gray-900">No products found</h2>
+                    <p class="mt-1 text-sm text-gray-500">Create your first product to get started.</p>
 
                     <a
                         href="<?= Html::encode($urlGenerator->generate('admin/product/create')) ?>"
@@ -80,115 +65,80 @@ $linkClass = 'font-medium text-gray-900 hover:underline';
                     >
                         Create Product
                     </a>
-
                 </div>
-
             <?php else: ?>
-
                 <div class="overflow-x-auto">
-
                     <table class="min-w-full divide-y divide-gray-200">
-
                         <thead class="bg-gray-50">
-
-                            <tr>
-
-                                <th
-                                    scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                >
-                                    Title
-                                </th>
-
-                                <th
-                                    scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                >
-                                    Quantity
-                                </th>
-
-                                <th
-                                    scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                                >
-                                    Price
-                                </th>
-
-                                <th
-                                    scope="col"
-                                    class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500"
-                                >
-                                    Actions
-                                </th>
-
-                            </tr>
-
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                Title
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                Quantity
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                Price
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                                Actions
+                            </th>
+                        </tr>
                         </thead>
 
                         <tbody class="divide-y divide-gray-200 bg-white">
+                        <?php foreach ($products as $product): ?>
+                            <tr class="transition hover:bg-gray-50">
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <?= Html::encode($product->getTitle()) ?>
+                                    </div>
 
-                            <?php foreach ($products as $product): ?>
-
-                                <tr class="transition hover:bg-gray-50">
-
-                                    <td class="whitespace-nowrap px-6 py-4">
-
-                                        <div class="text-sm font-medium text-gray-900">
-                                            <?= Html::encode($product->title) ?>
+                                    <?php if ($product->getDescription() !== null): ?>
+                                        <div class="mt-1 max-w-md truncate text-sm text-gray-500">
+                                            <?= Html::encode($product->getDescription()) ?>
                                         </div>
+                                    <?php endif ?>
+                                </td>
 
-                                        <?php if ($product->description !== null): ?>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                                    <?= Html::encode((string) $product->getQuantity()) ?>
+                                </td>
 
-                                            <div class="mt-1 max-w-md truncate text-sm text-gray-500">
-                                                <?= Html::encode($product->description) ?>
-                                            </div>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                                    <?= Html::encode($product->getPrice()) ?>
+                                </td>
 
-                                        <?php endif ?>
-
-                                    </td>
-
-                                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                                        <?= Html::encode((string) $product->quantity) ?>
-                                    </td>
-
-                                    <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                                        <?= Html::encode((string) $product->price) ?>
-                                    </td>
-
-                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-
+                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                                    <div class="inline-flex items-center gap-3">
                                         <a
-                                            href="#"
-                                            class="<?= $linkClass ?>"
+                                            href="<?= Html::encode($urlGenerator->generate('admin/product/edit', ['id' => $product->getId()])) ?>"
+                                            class="font-medium text-gray-900 hover:underline"
                                         >
                                             Edit
                                         </a>
 
-                                        <span class="mx-2 text-gray-300">|</span>
+                                        <?php $deleteForm = Html::form()
+                                            ->post($urlGenerator->generate('admin/product/delete', ['id' => $product->getId()]))
+                                            ->csrf($csrf); ?>
 
-                                        <a
-                                            href="products/<?= Html::encode((string) $product->id) ?>/delete"
-                                            class="font-medium text-red-600 hover:underline"
+                                        <?= $deleteForm->open() ?>
+                                        <button
+                                            type="submit"
+                                            class="cursor-pointer border-0 bg-transparent p-0 font-medium text-red-600 hover:underline"
+                                            onclick="return confirm('Delete this product?')"
                                         >
                                             Delete
-                                        </a>
-
-                                    </td>
-
-                                </tr>
-
-                            <?php endforeach ?>
-
+                                        </button>
+                                        <?= $deleteForm->close() ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
                         </tbody>
-
                     </table>
-
                 </div>
-
             <?php endif ?>
-
         </div>
-
     </div>
-
 </div>

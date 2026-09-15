@@ -5,35 +5,32 @@ declare(strict_types=1);
 namespace App\Web\Admin\Product\Delete;
 
 use App\Product\ProductRepository;
-use Yiisoft\Http\Status;
-use Yiisoft\Router\UrlGeneratorInterface;
-use Psr\Http\Message\ResponseInterface;
+use App\Product\ProductService;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Yiisoft\Http\Status;
+use Yiisoft\Router\HydratorAttribute\RouteArgument;
+use Yiisoft\Router\UrlGeneratorInterface;
 
-
-final class Action
+final readonly class Action
 {
     public function __construct(
-        private readonly ProductRepository $products,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private ProductRepository $products,
+        private ProductService $productService,
+        private UrlGeneratorInterface $urlGenerator,
         private ResponseFactoryInterface $responseFactory,
-    ) {}
+    ) {
+    }
 
-    public function __invoke(
-        int $id,
-    ): ResponseInterface {
+    public function __invoke(#[RouteArgument] int $id): ResponseInterface
+    {
         $product = $this->products->findById($id);
 
         if ($product === null) {
-            return $this->responseFactory
-                ->createResponse(Status::NOT_FOUND)
-                ->withHeader(
-                    'Location',
-                    $this->urlGenerator->generate('admin/product/index'),
-                );
+            return $this->responseFactory->createResponse(Status::NOT_FOUND);
         }
 
-        $this->products->delete($product);
+        $this->productService->delete($product);
 
         return $this->responseFactory
             ->createResponse(302)

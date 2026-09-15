@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Web\Admin\Product\Index;
 
 use App\Product\ProductRepository;
-use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 use Psr\Http\Message\ResponseInterface;
-
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
 
 final readonly class Action
 {
     public function __construct(
-        private readonly ProductRepository $products,
-        private WebViewRenderer $viewRenderer
+        private ProductRepository $products,
+        private WebViewRenderer $viewRenderer,
     ) {
     }
 
