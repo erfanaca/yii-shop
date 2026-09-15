@@ -18,10 +18,6 @@ final readonly class ProductService
     }
 
     /**
-     * Category IDs and image paths are kept as optional persistence inputs because
-     * these relations already exist in the current schema. The current admin form
-     * intentionally does not expose them until their UI/upload requirements are defined.
-     *
      * @param int[] $categoryIds
      * @param string[] $imagePaths
      */
@@ -39,6 +35,8 @@ final readonly class ProductService
         $categoryIds = $this->normalizeCategoryIds($categoryIds);
         $imagePaths = $this->normalizeImagePaths($imagePaths);
 
+        $this->assertCategoriesExist($categoryIds);
+
         return $this->db->transaction(function () use (
             $title,
             $description,
@@ -47,14 +45,6 @@ final readonly class ProductService
             $categoryIds,
             $imagePaths,
         ): Product {
-            foreach ($categoryIds as $categoryId) {
-                if ($this->categories->findById($categoryId) === null) {
-                    throw new InvalidArgumentException(
-                        "Category with ID {$categoryId} does not exist.",
-                    );
-                }
-            }
-
             $product = $this->products->create(
                 title: $title,
                 description: $description,
@@ -62,9 +52,7 @@ final readonly class ProductService
                 price: $price,
             );
 
-            foreach ($categoryIds as $categoryId) {
-                $this->products->addCategory($product->getId(), $categoryId);
-            }
+            $this->products->syncCategories($product->getId(), $categoryIds);
 
             foreach ($imagePaths as $sortOrder => $path) {
                 $this->products->addImage(
@@ -78,25 +66,65 @@ final readonly class ProductService
         });
     }
 
+    /**
+     * @param int[] $categoryIds
+     */
     public function update(
         Product $product,
         string $title,
         ?string $description,
         int $quantity,
         string $price,
+        array $categoryIds = [],
     ): Product {
-        return $this->products->update(
-            product: $product,
-            title: trim($title),
-            description: $this->normalizeDescription($description),
-            quantity: $quantity,
-            price: trim($price),
-        );
+        $title = trim($title);
+        $description = $this->normalizeDescription($description);
+        $price = trim($price);
+        $categoryIds = $this->normalizeCategoryIds($categoryIds);
+
+        $this->assertCategoriesExist($categoryIds);
+
+        return $this->db->transaction(function () use (
+            $product,
+            $title,
+            $description,
+            $quantity,
+            $price,
+            $categoryIds,
+        ): Product {
+            $updatedProduct = $this->products->update(
+                product: $product,
+                title: $title,
+                description: $description,
+                quantity: $quantity,
+                price: $price,
+            );
+
+            $this->products->syncCategories($product->getId(), $categoryIds);
+
+            return $updatedProduct;
+        });
     }
 
     public function delete(Product $product): void
     {
         $this->products->delete($product);
+    }
+
+    /**
+     * @param int[] $categoryIds
+     */
+    private function assertCategoriesExist(array $categoryIds): void
+    {
+        foreach ($categoryIds as $categoryId) {
+            if ($this->categories->findById($categoryId) !== null) {
+                continue;
+            }
+
+            throw new InvalidArgumentException(
+                "Category with ID {$categoryId} does not exist.",
+            );
+        }
     }
 
     private function normalizeDescription(?string $description): ?string

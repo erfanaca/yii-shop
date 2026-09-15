@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Web\Admin\Product\Create;
 
+use App\Category\CategoryRepository;
 use App\Product\CreateProductForm;
 use App\Product\ProductService;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,6 +21,7 @@ final readonly class Action
         private WebViewRenderer $viewRenderer,
         private FormHydrator $formHydrator,
         private ProductService $productService,
+        private CategoryRepository $categories,
         private ResponseFactoryInterface $responseFactory,
         private UrlGeneratorInterface $urlGenerator,
     ) {
@@ -27,25 +30,32 @@ final readonly class Action
     public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         $form = new CreateProductForm();
+        $categories = $this->categories->findAll();
 
         if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
-            $this->productService->create(
-                title: $form->getTitle() ?? '',
-                description: $form->getDescription(),
-                quantity: $form->getQuantity() ?? 0,
-                price: $form->getPrice() ?? '0.00',
-            );
-
-            return $this->responseFactory
-                ->createResponse(302)
-                ->withHeader(
-                    'Location',
-                    $this->urlGenerator->generate('admin/product/index'),
+            try {
+                $this->productService->create(
+                    title: $form->getTitle() ?? '',
+                    description: $form->getDescription(),
+                    quantity: $form->getQuantity() ?? 0,
+                    price: $form->getPrice() ?? '0.00',
+                    categoryIds: $form->getCategoryIds(),
                 );
+
+                return $this->responseFactory
+                    ->createResponse(302)
+                    ->withHeader(
+                        'Location',
+                        $this->urlGenerator->generate('admin/product/index'),
+                    );
+            } catch (InvalidArgumentException $exception) {
+                $form->addError($exception->getMessage(), ['categoryIds']);
+            }
         }
 
         return $this->viewRenderer->render(__DIR__ . '/template', [
             'form' => $form,
+            'categories' => $categories,
         ]);
     }
 }

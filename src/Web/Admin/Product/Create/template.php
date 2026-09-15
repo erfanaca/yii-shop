@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Category\Category;
 use App\Product\CreateProductForm;
 use Yiisoft\FormModel\Field;
 use Yiisoft\Html\Html;
@@ -11,6 +12,7 @@ use Yiisoft\Yii\View\Renderer\Csrf;
 
 /**
  * @var CreateProductForm $form
+ * @var Category[] $categories
  * @var WebView $this
  * @var UrlGeneratorInterface $urlGenerator
  * @var Csrf $csrf
@@ -44,6 +46,11 @@ $inputClass = implode(' ', [
 $textareaClass = $inputClass . ' resize-y';
 $labelClass = 'block text-sm font-medium text-gray-700 mb-2';
 $errorClass = 'mt-1.5 text-sm text-red-600';
+
+$categoryOptions = [];
+foreach ($categories as $category) {
+    $categoryOptions[(string) $category->getId()] = $category->getTitle();
+}
 ?>
 
 <div class="px-4 py-12">
@@ -92,6 +99,27 @@ $errorClass = 'mt-1.5 text-sm text-red-600';
                         ->inputClass($inputClass)
                         ->errorClass($errorClass)
                         ->placeholder('0.00') ?>
+                </div>
+
+                <div>
+                    <?php if ($categoryOptions === []): ?>
+                        <label class="<?= $labelClass ?>">Categories</label>
+                        <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-500">
+                            No categories are available yet.
+                        </div>
+                    <?php else: ?>
+                        <?= Field::select($form, 'categoryIds')
+                            ->label('Categories')
+                            ->labelClass($labelClass)
+                            ->inputClass($inputClass)
+                            ->errorClass($errorClass)
+                            ->optionsData($categoryOptions)
+                            ->multiple()
+                            ->size(min(max(count($categoryOptions), 3), 6)) ?>
+                        <p class="mt-1.5 text-xs text-gray-500">
+                            You can select more than one category.
+                        </p>
+                    <?php endif ?>
                 </div>
 
                 <div class="flex items-center gap-3">

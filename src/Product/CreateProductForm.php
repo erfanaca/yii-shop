@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Product;
 
 use Yiisoft\FormModel\FormModel;
+use Yiisoft\Validator\Rule\Each;
 use Yiisoft\Validator\Rule\Integer;
+use Yiisoft\Validator\Rule\Length;
 use Yiisoft\Validator\Rule\Regex;
 use Yiisoft\Validator\Rule\Required;
-use Yiisoft\Validator\Rule\Length;
 
 final class CreateProductForm extends FormModel
 {
@@ -31,6 +32,9 @@ final class CreateProductForm extends FormModel
     )]
     private ?string $price = null;
 
+    #[Each(new Integer(min: 1))]
+    private array $categoryIds = [];
+
     public function getTitle(): ?string
     {
         return $this->title;
@@ -49,5 +53,13 @@ final class CreateProductForm extends FormModel
     public function getPrice(): ?string
     {
         return $this->price;
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getCategoryIds(): array
+    {
+        return array_map(static fn (mixed $id): int => (int) $id, $this->categoryIds);
     }
 }

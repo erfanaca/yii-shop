@@ -44,6 +44,23 @@ final class ProductRepository
         return $this->createProductFromRow($row);
     }
 
+    /**
+     * @return int[]
+     */
+    public function findCategoryIds(int $productId): array
+    {
+        $rows = $this->db
+            ->createQuery()
+            ->from('product_categories')
+            ->where(['product_id' => $productId])
+            ->all();
+
+        return array_map(
+            static fn (array $row): int => (int) $row['category_id'],
+            $rows,
+        );
+    }
+
     public function create(
         string $title,
         ?string $description,
@@ -118,15 +135,25 @@ final class ProductRepository
             ->execute();
     }
 
-    public function addCategory(int $productId, int $categoryId): void
+    /**
+     * @param int[] $categoryIds
+     */
+    public function syncCategories(int $productId, array $categoryIds): void
     {
         $this->db
             ->createCommand()
-            ->insert('product_categories', [
-                'product_id' => $productId,
-                'category_id' => $categoryId,
-            ])
+            ->delete('product_categories', ['product_id' => $productId])
             ->execute();
+
+        foreach ($categoryIds as $categoryId) {
+            $this->db
+                ->createCommand()
+                ->insert('product_categories', [
+                    'product_id' => $productId,
+                    'category_id' => $categoryId,
+                ])
+                ->execute();
+        }
     }
 
     public function addImage(int $productId, string $path, int $sortOrder): void
