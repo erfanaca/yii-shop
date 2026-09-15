@@ -9,6 +9,7 @@ use Yiisoft\Definitions\Reference;
 use Yiisoft\Router\CurrentRoute;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\Yii\View\Renderer\CsrfViewInjection;
+use Yiisoft\Db\Mysql\Dsn;
 
 return [
     'application' => require __DIR__ . '/application.php',
@@ -34,5 +35,17 @@ return [
         'injections' => [
             Reference::to(CsrfViewInjection::class),
         ],
+    ],
+
+    'yiisoft/db-mysql' => [
+        'dsn' => new Dsn(
+            'mysql',
+            '127.0.0.1',
+            'shop',
+            '3306',
+            ['charset' => 'utf8mb4'],
+        ),
+        'username' => 'shop_admin',
+        'password' => '1234',
     ],
 ];
