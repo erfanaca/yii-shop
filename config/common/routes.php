@@ -25,5 +25,17 @@ return [
             Route::post('/logout')
                 ->action(Web\Auth\Logout\Action::class)
                 ->name('auth/logout'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/products/create')
+                ->action(Web\Admin\Product\Create\Action::class)
+                ->name('admin/product/create'),
+
+            Route::get('/admin/products')
+                ->action(Web\Admin\Product\Index\Action::class)
+                ->name('admin/product/index'),
+
+            Route::post('/admin/products/<id:\d+>/delete')
+                ->action(Web\Admin\Product\Delete\Action::class)
+                ->name('admin/products/delete'),
         ),
 ];
