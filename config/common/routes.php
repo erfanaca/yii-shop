@@ -41,5 +41,21 @@ return [
             Route::post('/admin/products/{id:\d+}/delete')
                 ->action(Web\Admin\Product\Delete\Action::class)
                 ->name('admin/product/delete'),
+
+            Route::get('/admin/categories')
+                ->action(Web\Admin\Category\Index\Action::class)
+                ->name('admin/category/index'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/categories/create')
+                ->action(Web\Admin\Category\Create\Action::class)
+                ->name('admin/category/create'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/categories/{id:\d+}/edit')
+                ->action(Web\Admin\Category\Edit\Action::class)
+                ->name('admin/category/edit'),
+
+            Route::post('/admin/categories/{id:\d+}/delete')
+                ->action(Web\Admin\Category\Delete\Action::class)
+                ->name('admin/category/delete'),
         ),
 ];

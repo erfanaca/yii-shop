@@ -60,6 +60,51 @@ final class CategoryRepository
         return $this->createCategoryFromRow($row);
     }
 
+
+    public function create(string $title): Category
+    {
+        $now = new DateTimeImmutable();
+
+        $this->db->createCommand()->insert('categories', [
+            'title' => $title,
+            'created_at' => $now,
+            'updated_at' => null,
+        ])->execute();
+
+        return new Category(
+            id: (int) $this->db->getLastInsertId(),
+            title: $title,
+            createdAt: $now,
+            updatedAt: null,
+        );
+    }
+
+    public function update(Category $category, string $title): Category
+    {
+        $updatedAt = new DateTimeImmutable();
+
+        $this->db->createCommand()->update('categories', [
+            'title' => $title,
+            'updated_at' => $updatedAt,
+        ], [
+            'id' => $category->getId(),
+        ])->execute();
+
+        return new Category(
+            id: $category->getId(),
+            title: $title,
+            createdAt: $category->getCreatedAt(),
+            updatedAt: $updatedAt,
+        );
+    }
+
+    public function delete(Category $category): void
+    {
+        $this->db->createCommand()->delete('categories', [
+            'id' => $category->getId(),
+        ])->execute();
+    }
+
     private function createCategoryFromRow(array $row): Category
     {
         return new Category(
