@@ -7,6 +7,7 @@ namespace App\Web\Admin\Product\Create;
 use App\Category\CategoryRepository;
 use App\Product\CreateProductForm;
 use App\Product\ProductService;
+use App\Product\ProductImageUploader;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -21,6 +22,7 @@ final readonly class Action
         private WebViewRenderer $viewRenderer,
         private FormHydrator $formHydrator,
         private ProductService $productService,
+        private ProductImageUploader $imageUploader,
         private CategoryRepository $categories,
         private ResponseFactoryInterface $responseFactory,
         private UrlGeneratorInterface $urlGenerator,
@@ -40,6 +42,7 @@ final readonly class Action
                     quantity: $form->getQuantity() ?? 0,
                     price: $form->getPrice() ?? '0.00',
                     categoryIds: $form->getCategoryIds(),
+                    imagePaths: $this->imageUploader->upload($request->getUploadedFiles()['images'] ?? []),
                 );
 
                 return $this->responseFactory

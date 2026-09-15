@@ -76,11 +76,13 @@ final readonly class ProductService
         int $quantity,
         string $price,
         array $categoryIds = [],
+        array $imagePaths = [],
     ): Product {
         $title = trim($title);
         $description = $this->normalizeDescription($description);
         $price = trim($price);
         $categoryIds = $this->normalizeCategoryIds($categoryIds);
+        $imagePaths = $this->normalizeImagePaths($imagePaths);
 
         $this->assertCategoriesExist($categoryIds);
 
@@ -91,6 +93,7 @@ final readonly class ProductService
             $quantity,
             $price,
             $categoryIds,
+            $imagePaths,
         ): Product {
             $updatedProduct = $this->products->update(
                 product: $product,
@@ -102,8 +105,29 @@ final readonly class ProductService
 
             $this->products->syncCategories($product->getId(), $categoryIds);
 
+            foreach ($imagePaths as $sortOrder => $path) {
+                $this->products->addImage(
+                    productId: $product->getId(),
+                    path: $path,
+                    sortOrder: $sortOrder,
+                );
+            }
+
             return $updatedProduct;
         });
+    }
+
+
+    /**
+     * @param string[] $imagePaths
+     * @return string[]
+     */
+    private function normalizeImagePaths(array $imagePaths): array
+    {
+        return array_values(array_filter(
+            $imagePaths,
+            static fn (mixed $path): bool => is_string($path) && trim($path) !== '',
+        ));
     }
 
     public function delete(Product $product): void
@@ -159,24 +183,5 @@ final readonly class ProductService
         return array_values($normalized);
     }
 
-    /**
-     * @param string[] $imagePaths
-     * @return string[]
-     */
-    private function normalizeImagePaths(array $imagePaths): array
-    {
-        $normalized = [];
 
-        foreach ($imagePaths as $path) {
-            $path = trim($path);
-
-            if ($path === '') {
-                throw new InvalidArgumentException('Product image path cannot be empty.');
-            }
-
-            $normalized[] = $path;
-        }
-
-        return $normalized;
-    }
 }

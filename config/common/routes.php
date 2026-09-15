@@ -57,5 +57,9 @@ return [
             Route::post('/admin/categories/{id:\d+}/delete')
                 ->action(Web\Admin\Category\Delete\Action::class)
                 ->name('admin/category/delete'),
+
+            Route::post('/admin/products/{productId:\d+}/images/{id:\d+}/delete')
+                ->action(Web\Admin\Product\DeleteImage\Action::class)
+                ->name('admin/product/delete-image'),
         ),
 ];

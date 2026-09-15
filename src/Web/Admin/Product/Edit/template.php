@@ -24,7 +24,8 @@ $this->setTitle('Edit Product');
 
 $htmlForm = Html::form()
     ->post($urlGenerator->generate('admin/product/edit', ['id' => $product->getId()]))
-    ->csrf($csrf);
+    ->csrf($csrf)
+    ->attribute('enctype', 'multipart/form-data');
 
 $inputClass = implode(' ', [
     'block',
@@ -51,7 +52,7 @@ $errorClass = 'mt-1.5 text-sm text-red-600';
 
 $categoryOptions = [];
 foreach ($categories as $category) {
-    $categoryOptions[(string) $category->getId()] = $category->getTitle();
+    $categoryOptions[(string)$category->getId()] = $category->getTitle();
 }
 ?>
 
@@ -104,9 +105,24 @@ foreach ($categories as $category) {
                 </div>
 
                 <div>
+                    <label class="<?= $labelClass ?>">Images</label>
+                    <input
+                        type="file"
+                        name="images[]"
+                        multiple
+                        accept="image/*"
+                        class="<?= $inputClass ?>"
+                    >
+                    <p class="mt-1.5 text-xs text-gray-500">
+                        You can select multiple images.
+                    </p>
+                </div>
+
+                <div>
                     <?php if ($categoryOptions === []): ?>
                         <label class="<?= $labelClass ?>">Categories</label>
-                        <div class="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-500">
+                        <div
+                            class="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-500">
                             No categories are available yet.
                         </div>
                     <?php else: ?>
@@ -142,6 +158,53 @@ foreach ($categories as $category) {
             </div>
 
             <?= $htmlForm->close() ?>
+
+            <?php if (!empty($images)): ?>
+                <div class="mt-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <?php foreach ($images as $image): ?>
+
+                            <?php
+                            $deleteImageForm = Html::form()
+                                ->post(
+                                    $urlGenerator->generate(
+                                        'admin/product/delete-image',
+                                        [
+                                            'productId' => $product->getId(),
+                                            'id' => $image->getId(),
+                                        ]
+                                    )
+                                )
+                                ->csrf($csrf);
+                            ?>
+
+                            <div class="relative rounded-lg border border-gray-200 bg-white p-2">
+
+                                <img
+                                    src="<?= '/' . ltrim($image->getPath(), '/') ?>"
+                                    class="h-32 w-full rounded-lg object-cover"
+                                    alt="product image"
+                                >
+
+
+                                <?= $deleteImageForm->open() ?>
+
+                                <button
+                                    type="submit"
+                                    onclick="return confirm('Delete this image?')"
+                                    class="absolute right-2 top-2 rounded-full bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
+                                >
+                                    ×
+                                </button>
+
+                                <?= $deleteImageForm->close() ?>
+
+                            </div>
+
+                        <?php endforeach ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

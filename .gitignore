@@ -27,3 +27,5 @@ c3.php
 
 # Local environment configuration
 .env
+
+/public/uploads

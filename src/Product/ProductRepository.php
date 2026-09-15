@@ -172,6 +172,56 @@ final class ProductRepository
             ->execute();
     }
 
+    /**
+     * @return ProductImage[]
+     */
+    public function findImages(int $productId): array
+    {
+        $rows = $this->db
+            ->createQuery()
+            ->from('product_images')
+            ->where(['product_id' => $productId])
+            ->orderBy(['sort_order' => SORT_ASC])
+            ->all();
+
+        return array_map(
+            static fn(array $row): ProductImage => new ProductImage(
+                id: (int) $row['id'],
+                productId: (int) $row['product_id'],
+                path: (string) $row['path'],
+                sortOrder: (int) $row['sort_order'],
+                createdAt: new DateTimeImmutable($row['created_at']),
+                updatedAt: $row['updated_at'] !== null
+                    ? new DateTimeImmutable($row['updated_at'])
+                    : null,
+            ),
+            $rows,
+        );
+    }
+
+    public function deleteImage(int $imageId): ?string
+    {
+        $image = $this->db
+            ->createQuery()
+            ->from('product_images')
+            ->where(['id' => $imageId])
+            ->one();
+
+        if (!$image) {
+            return null;
+        }
+
+        $this->db
+            ->createCommand()
+            ->delete(
+                'product_images',
+                ['id' => $imageId]
+            )
+            ->execute();
+
+        return $image['path'];
+    }
+
     private function createProductFromRow(array $row): Product
     {
         return new Product(

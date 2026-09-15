@@ -7,6 +7,7 @@ namespace App\Web\Admin\Product\Edit;
 use App\Category\CategoryRepository;
 use App\Product\ProductRepository;
 use App\Product\ProductService;
+use App\Product\ProductImageUploader;
 use App\Product\UpdateProductForm;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -25,6 +26,7 @@ final readonly class Action
         private FormHydrator $formHydrator,
         private ProductRepository $products,
         private ProductService $productService,
+        private ProductImageUploader $imageUploader,
         private CategoryRepository $categories,
         private ResponseFactoryInterface $responseFactory,
         private UrlGeneratorInterface $urlGenerator,
@@ -65,13 +67,14 @@ final readonly class Action
                     quantity: $form->getQuantity() ?? 0,
                     price: $form->getPrice() ?? '0.00',
                     categoryIds: $form->getCategoryIds(),
+                    imagePaths: $this->imageUploader->upload($request->getUploadedFiles()['images'] ?? []),
                 );
 
                 return $this->responseFactory
                     ->createResponse(302)
                     ->withHeader(
                         'Location',
-                        $this->urlGenerator->generate('admin/product/index'),
+                        '/admin/products/' . $product->getId() . '/edit',
                     );
             } catch (InvalidArgumentException $exception) {
                 $form->addError($exception->getMessage(), ['categoryIds']);
@@ -82,6 +85,7 @@ final readonly class Action
             'form' => $form,
             'product' => $product,
             'categories' => $categories,
+            'images' => $this->products->findImages($product->getId()),
         ]);
     }
 }

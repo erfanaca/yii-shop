@@ -22,7 +22,8 @@ $this->setTitle('Create Product');
 
 $htmlForm = Html::form()
     ->post($urlGenerator->generate('admin/product/create'))
-    ->csrf($csrf);
+    ->csrf($csrf)
+    ->attribute('enctype', 'multipart/form-data');
 
 $inputClass = implode(' ', [
     'block',
@@ -99,6 +100,20 @@ foreach ($categories as $category) {
                         ->inputClass($inputClass)
                         ->errorClass($errorClass)
                         ->placeholder('0.00') ?>
+                </div>
+
+                <div>
+                    <label class="<?= $labelClass ?>">Images</label>
+                    <input
+                        type="file"
+                        name="images[]"
+                        multiple
+                        accept="image/*"
+                        class="<?= $inputClass ?>"
+                    >
+                    <p class="mt-1.5 text-xs text-gray-500">
+                        You can select multiple images.
+                    </p>
                 </div>
 
                 <div>
