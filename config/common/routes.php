@@ -61,5 +61,21 @@ return [
             Route::post('/admin/products/{productId:\d+}/images/{id:\d+}/delete')
                 ->action(Web\Admin\Product\DeleteImage\Action::class)
                 ->name('admin/product/delete-image'),
+
+            Route::get('/admin/users')
+                ->action(Web\Admin\User\Index\Action::class)
+                ->name('admin/user/index'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/users/create')
+                ->action(Web\Admin\User\Create\Action::class)
+                ->name('admin/user/create'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/users/{id:\d+}/edit')
+                ->action(Web\Admin\User\Edit\Action::class)
+                ->name('admin/user/edit'),
+
+            Route::post('/admin/users/{id:\d+}/delete')
+                ->action(Web\Admin\User\Delete\Action::class)
+                ->name('admin/user/delete'),
         ),
 ];
