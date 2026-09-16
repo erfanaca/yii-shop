@@ -52,7 +52,7 @@ final readonly class Action
                         $this->urlGenerator->generate('admin/product/index'),
                     );
             } catch (InvalidArgumentException $exception) {
-                $form->addError($exception->getMessage(), ['categoryIds']);
+                $form->addError($exception->getMessage());
             }
         }
 

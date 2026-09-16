@@ -21,6 +21,7 @@ final readonly class Action
     public function __invoke(#[RouteArgument] int $id): ResponseInterface
     {
         $category = $this->categories->findById($id);
+        
         if ($category !== null) {
             $this->categories->delete($category);
         }

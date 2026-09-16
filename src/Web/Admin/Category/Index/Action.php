@@ -17,7 +17,7 @@ final readonly class Action
 
     public function __invoke(): ResponseInterface
     {
-        return $this->viewRenderer->render(__DIR__.'/template', [
+        return $this->viewRenderer->render(__DIR__. '/template', [
             'categories' => $this->categories->findAll(),
         ]);
     }

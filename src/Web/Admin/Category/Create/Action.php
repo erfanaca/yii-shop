@@ -30,10 +30,16 @@ final readonly class Action
         if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
             $this->categories->create(trim($form->getTitle() ?? ''));
 
-            return $this->responseFactory->createResponse(302)
-                ->withHeader('Location', $this->urlGenerator->generate('admin/category/index'));
+            return $this->responseFactory
+                ->createResponse(302)
+                ->withHeader(
+                    'Location',
+                    $this->urlGenerator->generate('admin/category/index')
+                );
         }
 
-        return $this->viewRenderer->render(__DIR__.'/template', ['form'=>$form]);
+        return $this->viewRenderer->render(__DIR__ . '/template', [
+            'form' => $form
+        ]);
     }
 }

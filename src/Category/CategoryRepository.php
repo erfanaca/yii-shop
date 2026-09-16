@@ -12,8 +12,7 @@ final class CategoryRepository
 {
     public function __construct(
         private readonly ConnectionInterface $db,
-    ) {
-    }
+    ) {}
 
     /**
      * @return Category[]
@@ -65,11 +64,14 @@ final class CategoryRepository
     {
         $now = new DateTimeImmutable();
 
-        $this->db->createCommand()->insert('categories', [
-            'title' => $title,
-            'created_at' => $now,
-            'updated_at' => null,
-        ])->execute();
+        $this->db
+            ->createCommand()
+            ->insert('categories', [
+                'title' => $title,
+                'created_at' => $now,
+                'updated_at' => null,
+            ])
+            ->execute();
 
         return new Category(
             id: (int) $this->db->getLastInsertId(),
@@ -83,12 +85,15 @@ final class CategoryRepository
     {
         $updatedAt = new DateTimeImmutable();
 
-        $this->db->createCommand()->update('categories', [
-            'title' => $title,
-            'updated_at' => $updatedAt,
-        ], [
-            'id' => $category->getId(),
-        ])->execute();
+        $this->db
+            ->createCommand()
+            ->update('categories', [
+                'title' => $title,
+                'updated_at' => $updatedAt,
+            ], [
+                'id' => $category->getId(),
+            ])
+            ->execute();
 
         return new Category(
             id: $category->getId(),
@@ -100,9 +105,12 @@ final class CategoryRepository
 
     public function delete(Category $category): void
     {
-        $this->db->createCommand()->delete('categories', [
-            'id' => $category->getId(),
-        ])->execute();
+        $this->db
+            ->createCommand()
+            ->delete('categories', [
+                'id' => $category->getId(),
+            ])
+            ->execute();
     }
 
     private function createCategoryFromRow(array $row): Category

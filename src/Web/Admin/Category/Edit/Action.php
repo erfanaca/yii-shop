@@ -29,21 +29,29 @@ final readonly class Action
     {
         $category = $this->categories->findById($id);
 
-        if ($category === null) return $this->responseFactory->createResponse(Status::NOT_FOUND);
+        if ($category === null)
+            return $this->responseFactory->createResponse(Status::NOT_FOUND);
 
         $form = new CategoryForm();
 
         if ($request->getMethod() === 'GET') {
-            $this->formHydrator->populate($form, ['title'=>$category->getTitle()], scope: '');
+            $this->formHydrator->populate($form, ['title' => $category->getTitle()], scope: '');
         }
 
         if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
             $this->categories->update($category, trim($form->getTitle() ?? ''));
 
-            return $this->responseFactory->createResponse(302)
-                ->withHeader('Location', $this->urlGenerator->generate('admin/category/index'));
+            return $this->responseFactory
+                ->createResponse(302)
+                ->withHeader(
+                    'Location',
+                    $this->urlGenerator->generate('admin/category/index')
+                );
         }
 
-        return $this->viewRenderer->render(__DIR__.'/template', ['form'=>$form, 'category'=>$category]);
+        return $this->viewRenderer->render(__DIR__ . '/template', [
+            'form' => $form,
+            'category' => $category
+        ]);
     }
 }
