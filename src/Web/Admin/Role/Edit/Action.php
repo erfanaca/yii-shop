@@ -1,3 +1,62 @@
-<?php declare(strict_types=1); namespace App\Web\Admin\Role\Edit;
-use App\Role\RoleRepository; use App\Permission\PermissionRepository; use Psr\Http\Message\{ResponseFactoryInterface,ResponseInterface,ServerRequestInterface}; use Yiisoft\Router\HydratorAttribute\RouteArgument; use Yiisoft\Router\UrlGeneratorInterface; use Yiisoft\Yii\View\Renderer\WebViewRenderer;
-final readonly class Action{public function __construct(private RoleRepository $roles,private PermissionRepository $permissions,private WebViewRenderer $view,private ResponseFactoryInterface $factory,private UrlGeneratorInterface $url){} public function __invoke(ServerRequestInterface $r,#[RouteArgument]int $id):ResponseInterface{$role=$this->roles->findById($id); if(!$role)return $this->factory->createResponse(404); if($r->getMethod()==='POST'){$p=$r->getParsedBody()??[];$this->roles->update($role,(string)$p['title']);$this->roles->syncPermissions($id,array_map('intval',$p['permissions']??[]));return $this->factory->createResponse(302)->withHeader('Location',$this->url->generate('admin/role/index'));} return $this->view->render(__DIR__.'/template',['role'=>$role,'permissions'=>$this->permissions->findAll(),'selected'=>$this->roles->permissionIds($id)]);}}
+<?php
+
+declare(strict_types=1);
+
+namespace App\Web\Admin\Role\Edit;
+
+use App\Permission\PermissionRepository;
+use App\Role\UpdateRoleForm;
+use App\Role\RoleRepository;
+use Psr\Http\Message\{ResponseFactoryInterface, ResponseInterface, ServerRequestInterface};
+use Yiisoft\FormModel\FormHydrator;
+use Yiisoft\Http\Status;
+use Yiisoft\Router\HydratorAttribute\RouteArgument;
+use Yiisoft\Router\UrlGeneratorInterface;
+use Yiisoft\Yii\View\Renderer\WebViewRenderer;
+
+final readonly class Action
+{
+    public function __construct(
+        private RoleRepository $roles,
+        private PermissionRepository $permissions,
+        private FormHydrator $formHydrator,
+        private WebViewRenderer $viewRenderer,
+        private ResponseFactoryInterface $factory,
+        private UrlGeneratorInterface $url
+    ) {
+    }
+
+    public function __invoke(ServerRequestInterface $request, #[RouteArgument] int $id): ResponseInterface
+    {
+        $role = $this->roles->findById($id);
+
+        if ($role === null)
+            return $this->factory->createResponse(Status::NOT_FOUND);
+
+        $form = new UpdateRoleForm();
+
+        if ($request->getMethod() === 'GET') {
+            $this->formHydrator->populate($form, ['title' => $role->getTitle()], scope: '');
+        }
+
+        if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
+            $this->roles->update($role, $form->getTitle() ?? '');
+
+            $body = $request->getParsedBody() ?? [];
+            $this->roles->syncPermissions($id, array_map('intval', $body['permissions'] ?? []));
+
+            return $this->factory
+                ->createResponse(302)
+                ->withHeader(
+                    'Location',
+                    $this->url->generate('admin/role/index')
+                );
+        }
+        return $this->viewRenderer->render(__DIR__ . '/template', [
+            'form' => $form,
+            'role' => $role,
+            'permissions' => $this->permissions->findAll(),
+            'selected' => $this->roles->permissionIds($id)
+        ]);
+    }
+}
