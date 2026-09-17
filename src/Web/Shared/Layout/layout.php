@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Yiisoft\Html\Html;
+use Yiisoft\User\CurrentUser;
 
 /**
  * @var string $content
@@ -33,7 +34,7 @@ $this->beginPage();
         <nav class="flex items-center gap-2">
             <a class="rounded-lg px-3 py-2 hover:bg-gray-100" href="<?= $urlGenerator->generate('home') ?>">Home</a>
             <a class="rounded-lg px-3 py-2 hover:bg-gray-100" href="<?= $urlGenerator->generate('product/index') ?>">Products</a>
-            <a class="rounded-lg px-3 py-2 hover:bg-gray-100" href="#">Cart</a>
+            <a class="rounded-lg px-3 py-2 hover:bg-gray-100" href="<?= $urlGenerator->generate('cart/index') ?>">Cart</a>
 
             <?php if ($currentUser->isGuest()): ?>
                 <a class="rounded-lg bg-gray-900 px-3 py-2 text-white"

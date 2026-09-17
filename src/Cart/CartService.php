@@ -157,6 +157,83 @@ final readonly class CartService
     }
 
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getItems(int $userId): array
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            return [];
+        }
+
+        return $this->db
+            ->createQuery()
+            ->select([
+                'cart_items.id',
+                'cart_items.product_id',
+                'cart_items.quantity',
+                'cart_items.unit_price',
+                'products.title',
+                'products.quantity AS stock',
+            ])
+            ->from('cart_items')
+            ->innerJoin('products', 'products.id = cart_items.product_id')
+            ->where(['cart_items.cart_id' => $cartId])
+            ->all();
+    }
+
+    public function removeProduct(int $userId, int $productId): void
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            return;
+        }
+
+        $this->db
+            ->createCommand()
+            ->delete('cart_items', [
+                'cart_id' => $cartId,
+                'product_id' => $productId,
+            ])
+            ->execute();
+
+        $this->touchCart($cartId, new DateTimeImmutable());
+    }
+
+    public function updateQuantity(int $userId, int $productId, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            $this->removeProduct($userId, $productId);
+            return;
+        }
+
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            return;
+        }
+
+        $this->db
+            ->createCommand()
+            ->update(
+                'cart_items',
+                [
+                    'quantity' => $quantity,
+                    'updated_at' => new DateTimeImmutable(),
+                ],
+                [
+                    'cart_id' => $cartId,
+                    'product_id' => $productId,
+                ],
+            )
+            ->execute();
+
+        $this->touchCart($cartId, new DateTimeImmutable());
+    }
+
     private function getAvailableProductQuantity(int $productId): int
     {
         $product = $this->db

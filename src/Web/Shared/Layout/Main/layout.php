@@ -370,7 +370,7 @@ $this->beginPage();
                         Products
                     </a>
 
-                    <a href="#"
+                    <a href="<?= Html::encode($urlGenerator->generate('cart/index')) ?>"
                        class="text-sm font-medium text-gray-600 transition hover:text-gray-900">
                         Cart
                     </a>
