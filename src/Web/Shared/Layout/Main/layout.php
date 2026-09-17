@@ -31,6 +31,8 @@ $isAdmin = str_starts_with($currentPath, '/admin');
 $isProductsActive = str_starts_with($currentPath, '/admin/products');
 $isCategoriesActive = str_starts_with($currentPath, '/admin/categories');
 $isUsersActive = str_starts_with($currentPath, '/admin/users');
+$isRolesActive = str_starts_with($currentPath, '/admin/roles');
+$isPermissionsActive = str_starts_with($currentPath, '/admin/permissions');
 
 $sidebarItemClass = static function (bool $active): string {
     $base = implode(' ', [
@@ -54,31 +56,31 @@ $sidebarItemClass = static function (bool $active): string {
 
 $this->beginPage();
 ?>
-<!DOCTYPE html>
-<html lang="<?= Html::encode($applicationParams->locale) ?>">
+    <!DOCTYPE html>
+    <html lang="<?= Html::encode($applicationParams->locale) ?>">
 
-<head>
-    <meta charset="<?= Html::encode($applicationParams->charset) ?>">
+    <head>
+        <meta charset="<?= Html::encode($applicationParams->charset) ?>">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1">
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1">
 
-    <link
-        rel="icon"
-        href="<?= $aliases->get('@baseUrl/favicon.svg') ?>"
-        type="image/svg+xml">
+        <link
+            rel="icon"
+            href="<?= $aliases->get('@baseUrl/favicon.svg') ?>"
+            type="image/svg+xml">
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <title>
-        <?= Html::encode($this->getTitle()) ?>
-    </title>
+        <title>
+            <?= Html::encode($this->getTitle()) ?>
+        </title>
 
-    <?php $this->head() ?>
-</head>
+        <?php $this->head() ?>
+    </head>
 
-<body class="<?= $isAdmin ? 'bg-gray-50' : '' ?>">
+    <body class="<?= $isAdmin ? 'bg-gray-50' : '' ?>">
 
     <?php $this->beginBody() ?>
 
@@ -93,8 +95,8 @@ $this->beginPage();
                     class="flex h-16 items-center border-b border-gray-200 px-6">
                     <a
                         href="<?= Html::encode(
-                                    $urlGenerator->generate('admin/product/index')
-                                ) ?>"
+                            $urlGenerator->generate('admin/product/index')
+                        ) ?>"
                         class="flex items-center gap-3">
                         <div
                             class="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900 text-sm font-bold text-white
@@ -126,8 +128,8 @@ $this->beginPage();
                     <nav class="space-y-1">
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('admin/product/index')
-                                    ) ?>"
+                                $urlGenerator->generate('admin/product/index')
+                            ) ?>"
                             class="<?= $sidebarItemClass($isProductsActive) ?>">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -140,7 +142,7 @@ $this->beginPage();
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     d=" M21 7.5 12 2.25 3 7.5 m18 0 -9 5.25 m9 -5.25 v9 l-9 5.25 m0 -9 L3 7.5 m9 5.25 v9 m-9 -14.25 v9 l9 5.25
-                                " />
+                                "/>
                             </svg>
 
                             <span>Products</span>
@@ -148,8 +150,8 @@ $this->beginPage();
 
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('admin/category/index')
-                                    ) ?>"
+                                $urlGenerator->generate('admin/category/index')
+                            ) ?>"
                             class="<?= $sidebarItemClass($isCategoriesActive) ?>">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -162,7 +164,7 @@ $this->beginPage();
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     d=" M3.75 6 A2.25 2.25 0 0 1 6 3.75 h2.25 A2.25 2.25 0 0 1 10.5 6 v2.25 a2.25 2.25 0 0 1 -2.25 2.25 H6 a2.25 2.25 0 0 1 -2.25 -2.25 V6 M13.5 6 a2.25 2.25 0 0 1 2.25 -2.25 H18 A2.25 2.25 0 0 1 20.25 6 v2.25 A2.25 2.25 0 0 1 18 10.5 h-2.25 a2.25 2.25 0 0 1 -2.25 -2.25 V6 M3.75 15.75 A2.25 2.25 0 0 1 6 13.5 h2.25 a2.25 2.25 0 0 1 2.25 2.25 V18 a2.25 2.25 0 0 1 -2.25 2.25 H6 A2.25 2.25 0 0 1 3.75 18 v-2.25 M13.5 15.75 a2.25 2.25 0 0 1 2.25 -2.25 H18 a2.25 2.25 0 0 1 2.25 2.25 V18 A2.25 2.25 0 0 1 18 20.25 h-2.25 A2.25 2.25 0 0 1 13.5 18 v-2.25 Z
-                                " />
+                                "/>
                             </svg>
 
                             <span>Categories</span>
@@ -170,14 +172,25 @@ $this->beginPage();
 
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('admin/user/index')
-                                    ) ?>"
+                                $urlGenerator->generate('admin/user/index')
+                            ) ?>"
                             class="<?= $sidebarItemClass($isUsersActive) ?>">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><!-- Icon from Huge Icons by Hugeicons - undefined -->
-                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.5 20.5c-.234-2.931-2.658-5.252-5.692-5.448L11.999 15q-.431.012-.811.03C8.18 15.172 5.73 17.597 5.5 20.5m9.75-11.25a3.25 3.25 0 1 1-6.5 0a3.25 3.25 0 0 1 6.5 0M5.502 8.5A3.25 3.25 0 0 1 9.5 3.752M18.496 8.5A3.25 3.25 0 0 0 14.5 3.752M22 18c-.18-2.263-2-4.5-4-5M2 18c.18-2.263 2-4.5 4-5" />
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                <!-- Icon from Huge Icons by Hugeicons - undefined -->
+                                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="1.5"
+                                      d="M18.5 20.5c-.234-2.931-2.658-5.252-5.692-5.448L11.999 15q-.431.012-.811.03C8.18 15.172 5.73 17.597 5.5 20.5m9.75-11.25a3.25 3.25 0 1 1-6.5 0a3.25 3.25 0 0 1 6.5 0M5.502 8.5A3.25 3.25 0 0 1 9.5 3.752M18.496 8.5A3.25 3.25 0 0 0 14.5 3.752M22 18c-.18-2.263-2-4.5-4-5M2 18c.18-2.263 2-4.5 4-5"/>
                             </svg>
 
                             <span>Users</span>
+                        </a>
+                        <a href="<?= Html::encode($urlGenerator->generate('admin/role/index')) ?>"
+                           class="<?= $sidebarItemClass($isRolesActive) ?>">
+                            <span>Roles</span>
+                        </a>
+                        <a href="<?= Html::encode($urlGenerator->generate('admin/permission/index')) ?>"
+                           class="<?= $sidebarItemClass($isPermissionsActive) ?>">
+                            <span>Permissions</span>
                         </a>
 
                     </nav>
@@ -187,8 +200,8 @@ $this->beginPage();
 
                     <a
                         href="<?= Html::encode(
-                                    $urlGenerator->generate('home')
-                                ) ?>"
+                            $urlGenerator->generate('home')
+                        ) ?>"
                         class=" flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900
                     ">
                         <svg
@@ -202,7 +215,7 @@ $this->beginPage();
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 d="M10.5 19.5 3 12 m0 0 7.5 -7.5 M3 12 h18
-                            " />
+                            "/>
                         </svg>
 
                         <span>Back to Shop</span>
@@ -244,8 +257,8 @@ $this->beginPage();
 
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('home')
-                                    ) ?>"
+                                $urlGenerator->generate('home')
+                            ) ?>"
                             class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900
                         ">
                             <svg
@@ -259,7 +272,7 @@ $this->beginPage();
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     d="m2.25 12 8.954 -8.955 c.44 -.439 1.152 -.439 1.591 0 L21.75 1 M4.5 9.75 v10.125 c0 .621 .504 1.125 1.125 1.125 H9.75 v-4.875 c0 -.621 .504 -1.125 1.125 -1.125 h2.25 c.621 0 1.125 .504 1.125 1.125 V21 h4.125 c.621 0 1.125 -.504 1.125 -1.125 V9.75
-                                " />
+                                "/>
                             </svg>
 
                             <span class="hidden sm:inline">
@@ -278,8 +291,8 @@ $this->beginPage();
 
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('admin/product/index')
-                                    ) ?>"
+                                $urlGenerator->generate('admin/product/index')
+                            ) ?>"
                             class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition
                             <?= $isProductsActive
                                 ? 'bg-gray-900 text-white'
@@ -291,8 +304,8 @@ $this->beginPage();
 
                         <a
                             href="<?= Html::encode(
-                                        $urlGenerator->generate('admin/category/index')
-                                    ) ?>"
+                                $urlGenerator->generate('admin/category/index')
+                            ) ?>"
                             class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition
                             <?= $isCategoriesActive
                                 ? 'bg-gray-900 text-white'
@@ -321,7 +334,7 @@ $this->beginPage();
 
     <?php $this->endBody() ?>
 
-</body>
+    </body>
 
-</html>
+    </html>
 <?php $this->endPage() ?>

@@ -77,5 +77,31 @@ return [
             Route::post('/admin/users/{id:\d+}/delete')
                 ->action(Web\Admin\User\Delete\Action::class)
                 ->name('admin/user/delete'),
+
+            Route::get('/admin/roles')
+                ->action(Web\Admin\Role\Index\Action::class)
+                ->name('admin/role/index'),
+            Route::methods([Method::GET, Method::POST], '/admin/roles/create')
+                ->action(Web\Admin\Role\Create\Action::class)
+                ->name('admin/role/create'),
+            Route::methods([Method::GET, Method::POST], '/admin/roles/{id:\d+}/edit')
+                ->action(Web\Admin\Role\Edit\Action::class)
+                ->name('admin/role/edit'),
+            Route::post('/admin/roles/{id:\d+}/delete')
+                ->action(Web\Admin\Role\Delete\Action::class)
+                ->name('admin/role/delete'),
+
+            Route::get('/admin/permissions')
+                ->action(Web\Admin\Permission\Index\Action::class)
+                ->name('admin/permission/index'),
+            Route::methods([Method::GET, Method::POST], '/admin/permissions/create')
+                ->action(Web\Admin\Permission\Create\Action::class)
+                ->name('admin/permission/create'),
+            Route::methods([Method::GET, Method::POST], '/admin/permissions/{id:\d+}/edit')
+                ->action(Web\Admin\Permission\Edit\Action::class)
+                ->name('admin/permission/edit'),
+            Route::post('/admin/permissions/{id:\d+}/delete')
+                ->action(Web\Admin\Permission\Delete\Action::class)
+                ->name('admin/permission/delete'),
         ),
 ];

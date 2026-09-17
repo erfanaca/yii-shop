@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); use Yiisoft\Html\Html; $this->setTitle('Create Role');?> <form method="post" class="p-8"><input name="title" class="border p-2"><button class="bg-black text-white p-2">Save</button></form>
