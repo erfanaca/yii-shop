@@ -26,6 +26,14 @@ return [
                 ->action(Web\Auth\Logout\Action::class)
                 ->name('auth/logout'),
 
+            Route::get('/products')
+                ->action(Web\Product\Index\Action::class)
+                ->name('product/index'),
+
+            Route::get('/products/{id:\d+}')
+                ->action(Web\Product\View\Action::class)
+                ->name('product/view'),
+
             Route::get('/admin/products')
                 ->action(Web\Admin\Product\Index\Action::class)
                 ->name('admin/product/index'),
