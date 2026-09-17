@@ -15,20 +15,44 @@ final class PermissionSeeder
 
     public function run(): void
     {
-        $permissions = [
-            'user.create',
-            'user.update',
-            'user.delete',
-            'user.view',
+        $resources = [
+            'user',
+            'product',
+            'category',
+            'role',
+            'permission',
         ];
 
+        $actions = [
+            'manage',
+            'view',
+            'create',
+            'update',
+            'delete',
+        ];
+
+        $permissions = [];
+
+        foreach ($resources as $resource) {
+            foreach ($actions as $action) {
+                $permissions[] = $resource . '.' . $action;
+            }
+        }
+
         foreach ($permissions as $permission) {
-            $this->db->createCommand()->insert(
-                'permissions',
-                [
-                    'title' => $permission,
-                ]
-            )->execute();
+            $exists = $this->db->createCommand(
+                'SELECT id FROM permissions WHERE title = :title',
+                [':title' => $permission]
+            )->queryScalar();
+
+            if ($exists === false) {
+                $this->db->createCommand()->insert(
+                    'permissions',
+                    [
+                        'title' => $permission,
+                    ]
+                )->execute();
+            }
         }
     }
 }

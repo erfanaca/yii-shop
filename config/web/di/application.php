@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Web\NotFound\NotFoundHandler;
+use App\Web\Middleware\AdminAccessMiddleware;
 use Yiisoft\Csrf\CsrfTokenMiddleware;
 use Yiisoft\Definitions\DynamicReference;
 use Yiisoft\Definitions\Reference;
@@ -30,6 +31,7 @@ return [
                         SessionMiddleware::class,
                         CsrfTokenMiddleware::class,
                         RequestCatcherMiddleware::class,
+                        AdminAccessMiddleware::class,
                         Router::class,
                     ],
                 ],
