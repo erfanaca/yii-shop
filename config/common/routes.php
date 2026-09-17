@@ -34,6 +34,14 @@ return [
                 ->action(Web\Product\View\Action::class)
                 ->name('product/view'),
 
+            Route::post('/cart/add/{id:\d+}')
+                ->action(Web\Cart\Add\Action::class)
+                ->name('cart/add'),
+
+            Route::post('/cart/decrease/{id:\d+}')
+                ->action(Web\Cart\Decrease\Action::class)
+                ->name('cart/decrease'),
+
             Route::get('/admin/products')
                 ->action(Web\Admin\Product\Index\Action::class)
                 ->name('admin/product/index'),
