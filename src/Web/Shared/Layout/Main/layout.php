@@ -343,7 +343,60 @@ $this->beginPage();
 
 <?php else: ?>
 
-    <?= $content ?>
+    <div class="min-h-screen bg-gray-50">
+
+        <header class="border-b border-gray-200 bg-white">
+            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+                <a href="<?= Html::encode($urlGenerator->generate('home')) ?>"
+                   class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-900 text-sm font-bold text-white">
+                        S
+                    </div>
+                    <div>
+                        <div class="text-sm font-semibold text-gray-900">Simple Shop</div>
+                        <div class="text-xs text-gray-400">Online Store</div>
+                    </div>
+                </a>
+
+                <nav class="hidden items-center gap-6 md:flex">
+                    <a href="<?= Html::encode($urlGenerator->generate('home')) ?>"
+                       class="text-sm font-medium text-gray-600 transition hover:text-gray-900">
+                        Home
+                    </a>
+
+                    <a href="<?= Html::encode($urlGenerator->generate('product/index')) ?>"
+                       class="text-sm font-medium text-gray-600 transition hover:text-gray-900">
+                        Products
+                    </a>
+
+                    <a href="#"
+                       class="text-sm font-medium text-gray-600 transition hover:text-gray-900">
+                        Cart
+                    </a>
+                </nav>
+
+                <div class="flex items-center gap-3">
+                    <?php if (isset($user) && $user !== null): ?>
+                        <span class="hidden text-sm text-gray-500 sm:block">
+                            <?= Html::encode($user->getEmail()) ?>
+                        </span>
+                    <?php endif ?>
+
+                    <a href="<?= Html::encode($urlGenerator->generate('auth/login')) ?>"
+                       class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
+                        Account
+                    </a>
+                </div>
+
+            </div>
+        </header>
+
+        <main>
+            <?= $content ?>
+        </main>
+
+    </div>
 
 <?php endif ?>
 
