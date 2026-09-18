@@ -51,6 +51,10 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
     {
         $parts = explode('/', $path);
 
+        if (($parts[1] ?? null) === 'users' && ($parts[3] ?? null) === 'roles') {
+            return 'user.roles.manage';
+        }
+
         $resource = $parts[1] ?? null;
         $action = $parts[2] ?? 'index';
 
@@ -80,4 +84,5 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
             default => $resource . '.manage',
         };
     }
+
 }

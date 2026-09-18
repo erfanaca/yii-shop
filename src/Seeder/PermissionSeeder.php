@@ -32,6 +32,8 @@ final class PermissionSeeder
             }
         }
 
+        $permissions[] = 'user.roles.manage';
+
         foreach ($permissions as $permission) {
             $exists = $this->db->createCommand(
                 'SELECT id FROM permissions WHERE title = :title',

@@ -114,6 +114,10 @@ return [
                 ->action(Web\Admin\User\Edit\Action::class)
                 ->name('admin/user/edit'),
 
+            Route::methods([Method::GET, Method::POST], '/admin/users/{id:\d+}/roles')
+                ->action(Web\Admin\User\Roles\Action::class)
+                ->name('admin/user/roles'),
+
             Route::post('/admin/users/{id:\d+}/delete')
                 ->action(Web\Admin\User\Delete\Action::class)
                 ->name('admin/user/delete'),

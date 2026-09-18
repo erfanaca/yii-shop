@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Admin\User;
 
 use App\User\User;
-use Yiisoft\Db\Connection\ConnectionInterface;
 use DateTimeImmutable;
-use DateTimeInterface;
+use Yiisoft\Db\Connection\ConnectionInterface;
 
 final class UserRepository
 {
@@ -92,6 +91,82 @@ final class UserRepository
                 'id' => $user->getId(),
             ])
             ->execute();
+    }
+
+    /**
+     * @return int[]
+     */
+    public function roleIds(int $userId): array
+    {
+        $rows = $this->db
+            ->createQuery()
+            ->select('role_id')
+            ->from('user_roles')
+            ->where(['user_id' => $userId])
+            ->all();
+
+        return array_map(
+            static fn(array $row): int => (int) $row['role_id'],
+            $rows,
+        );
+    }
+
+    /**
+     * @param int[] $roleIds
+     */
+    public function syncRoles(int $userId, array $roleIds): void
+    {
+        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
+
+        $this->db->transaction(function () use ($userId, $roleIds): void {
+            $this->db
+                ->createCommand()
+                ->delete('user_roles', ['user_id' => $userId])
+                ->execute();
+
+            foreach ($roleIds as $roleId) {
+                $this->db
+                    ->createCommand()
+                    ->insert('user_roles', [
+                        'user_id' => $userId,
+                        'role_id' => $roleId,
+                    ])
+                    ->execute();
+            }
+        });
+    }
+
+    /**
+     * @param int[] $userIds
+     * @return array<int, string[]>
+     */
+    public function roleTitlesByUserIds(array $userIds): array
+    {
+        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+
+        if ($userIds === []) {
+            return [];
+        }
+
+        $rows = $this->db
+            ->createQuery()
+            ->select([
+                'ur.user_id',
+                'r.title',
+            ])
+            ->from(['ur' => 'user_roles'])
+            ->innerJoin(['r' => 'roles'], 'r.id = ur.role_id')
+            ->where(['ur.user_id' => $userIds])
+            ->orderBy(['r.title' => SORT_ASC])
+            ->all();
+
+        $result = [];
+
+        foreach ($rows as $row) {
+            $result[(int) $row['user_id']][] = (string) $row['title'];
+        }
+
+        return $result;
     }
 
     private function createUserFromRow(array $row): User
