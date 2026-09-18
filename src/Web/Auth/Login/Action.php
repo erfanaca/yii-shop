@@ -40,7 +40,7 @@ final readonly class Action
                     ->createResponse(302)
                     ->withHeader(
                         'Location',
-                        $this->urlGenerator->generate('home'),
+                        $this->urlGenerator->generate('dashboard'),
                     );
             }
 

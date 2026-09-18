@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Web\Shared\Layout\Main\MainAsset;
 use Yiisoft\Html\Html;
+use Yiisoft\User\CurrentUser;
 
 /**
  * @var \App\Shared\ApplicationParams $applicationParams
@@ -14,6 +15,7 @@ use Yiisoft\Html\Html;
  * @var Yiisoft\View\WebView $this
  * @var Yiisoft\Router\CurrentRoute $currentRoute
  * @var Yiisoft\Router\UrlGeneratorInterface $urlGenerator
+ * @var CurrentUser $currentUser
  */
 
 $assetManager->register(MainAsset::class);
@@ -377,16 +379,29 @@ $this->beginPage();
                 </nav>
 
                 <div class="flex items-center gap-3">
-                    <?php if (isset($user) && $user !== null): ?>
-                        <span class="hidden text-sm text-gray-500 sm:block">
-                            <?= Html::encode($user->getEmail()) ?>
-                        </span>
-                    <?php endif ?>
+                    <?php if (!$currentUser->isGuest()): ?>
+                        <?php $identity = $currentUser->getIdentity(); ?>
+                        <?php if ($identity instanceof \App\User\User): ?>
+                            <span class="hidden text-sm text-gray-500 sm:block">
+                                <?= Html::encode($identity->getEmail()) ?>
+                            </span>
+                        <?php endif ?>
 
-                    <a href="<?= Html::encode($urlGenerator->generate('auth/login')) ?>"
-                       class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
-                        Account
-                    </a>
+                        <a href="<?= Html::encode($urlGenerator->generate('dashboard')) ?>"
+                           class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
+                            Account
+                        </a>
+                    <?php else: ?>
+                        <a href="<?= Html::encode($urlGenerator->generate('auth/login')) ?>"
+                           class="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-gray-900">
+                            Login
+                        </a>
+
+                        <a href="<?= Html::encode($urlGenerator->generate('auth/register')) ?>"
+                           class="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800">
+                            Register
+                        </a>
+                    <?php endif ?>
                 </div>
 
             </div>

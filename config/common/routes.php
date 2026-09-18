@@ -54,6 +54,10 @@ return [
                 ->action(Web\Checkout\Simulate\Action::class)
                 ->name('checkout/simulate'),
 
+            Route::get('/dashboard')
+                ->action(Web\Dashboard\Action::class)
+                ->name('dashboard'),
+
             Route::get('/admin/products')
                 ->action(Web\Admin\Product\Index\Action::class)
                 ->name('admin/product/index'),
