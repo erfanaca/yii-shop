@@ -9,6 +9,7 @@ use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\View\WebView;
 
 /** @var AdminOrderSummary[] $orders */
+/** @var bool $canView */
 /** @var WebView $this */
 /** @var UrlGeneratorInterface $urlGenerator */
 
@@ -56,7 +57,9 @@ $statusPresentation = static fn (OrderStatus $status): array => match ($status) 
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                            <?php if ($canView): ?>
+                                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                            <?php endif; ?>
                         </tr>
                         </thead>
 
@@ -88,14 +91,16 @@ $statusPresentation = static fn (OrderStatus $status): array => match ($status) 
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                                     <?= Html::encode($order->getCreatedAt()->format('Y-m-d H:i')) ?>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                    <a
-                                        href="<?= Html::encode($urlGenerator->generate('admin/order/view', ['id' => $order->getId()])) ?>"
-                                        class="font-medium text-gray-900 hover:underline"
-                                    >
-                                        View
-                                    </a>
-                                </td>
+                                <?php if ($canView): ?>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                                        <a
+                                            href="<?= Html::encode($urlGenerator->generate('admin/order/view', ['id' => $order->getId()])) ?>"
+                                            class="font-medium text-gray-900 hover:underline"
+                                        >
+                                            View
+                                        </a>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

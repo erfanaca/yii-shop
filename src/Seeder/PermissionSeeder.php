@@ -15,38 +15,36 @@ final class PermissionSeeder
 
     public function run(): void
     {
-        $resourceActions = [
-            'user' => ['manage', 'view', 'create', 'update', 'delete'],
-            'product' => ['manage', 'view', 'create', 'update', 'delete'],
-            'category' => ['manage', 'view', 'create', 'update', 'delete'],
-            'role' => ['manage', 'view', 'create', 'update', 'delete'],
-            'permission' => ['manage', 'view', 'create', 'update', 'delete'],
-            'order' => ['manage', 'view'],
+        $resources = [
+            'user',
+            'product',
+            'category',
+            'role',
+            'permission',
+            'order',
         ];
 
+        $actions = ['index', 'create', 'edit', 'delete', 'view'];
         $permissions = [];
 
-        foreach ($resourceActions as $resource => $actions) {
+        foreach ($resources as $resource) {
             foreach ($actions as $action) {
                 $permissions[] = $resource . '.' . $action;
             }
         }
 
-        $permissions[] = 'user.roles.manage';
+        $permissions[] = 'user.roles';
 
         foreach ($permissions as $permission) {
             $exists = $this->db->createCommand(
                 'SELECT id FROM permissions WHERE title = :title',
-                [':title' => $permission]
+                [':title' => $permission],
             )->queryScalar();
 
             if ($exists === false) {
-                $this->db->createCommand()->insert(
-                    'permissions',
-                    [
-                        'title' => $permission,
-                    ]
-                )->execute();
+                $this->db->createCommand()
+                    ->insert('permissions', ['title' => $permission])
+                    ->execute();
             }
         }
     }

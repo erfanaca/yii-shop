@@ -10,6 +10,9 @@ use Yiisoft\Yii\View\Renderer\Csrf;
 
 /** @var User[] $users */
 /** @var array<int, string[]> $rolesByUserId */
+/** @var bool $canCreate */
+/** @var bool $canEdit */
+/** @var bool $canDelete */
 /** @var bool $canManageRoles */
 /** @var WebView $this */
 /** @var UrlGeneratorInterface $urlGenerator */
@@ -28,9 +31,11 @@ $buttonClass = 'inline-flex cursor-pointer items-center rounded-lg bg-gray-900 p
                 <p class="mt-2 text-sm text-gray-500">Manage users and their assigned roles</p>
             </div>
 
-            <a href="<?= Html::encode($urlGenerator->generate('admin/user/create')) ?>" class="<?= $buttonClass ?>">
-                Create User
-            </a>
+            <?php if ($canCreate): ?>
+                <a href="<?= Html::encode($urlGenerator->generate('admin/user/create')) ?>" class="<?= $buttonClass ?>">
+                    Create User
+                </a>
+            <?php endif; ?>
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -46,7 +51,9 @@ $buttonClass = 'inline-flex cursor-pointer items-center rounded-lg bg-gray-900 p
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Roles</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                            <?php if ($canManageRoles || $canEdit || $canDelete): ?>
+                                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                            <?php endif; ?>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
@@ -69,32 +76,38 @@ $buttonClass = 'inline-flex cursor-pointer items-center rounded-lg bg-gray-900 p
                                         </div>
                                     <?php endif; ?>
                                 </td>
-                                <td class="px-6 py-4 text-right text-sm">
-                                    <div class="inline-flex items-center gap-3">
-                                        <?php if ($canManageRoles): ?>
-                                            <a
-                                                href="<?= Html::encode($urlGenerator->generate('admin/user/roles', ['id' => $user->getId()])) ?>"
-                                                class="font-medium text-blue-600 hover:underline"
-                                            >
-                                                Roles
-                                            </a>
-                                        <?php endif; ?>
+                                <?php if ($canManageRoles || $canEdit || $canDelete): ?>
+                                    <td class="px-6 py-4 text-right text-sm">
+                                        <div class="inline-flex items-center gap-3">
+                                            <?php if ($canManageRoles): ?>
+                                                <a
+                                                    href="<?= Html::encode($urlGenerator->generate('admin/user/roles', ['id' => $user->getId()])) ?>"
+                                                    class="font-medium text-blue-600 hover:underline"
+                                                >
+                                                    Roles
+                                                </a>
+                                            <?php endif; ?>
 
-                                        <a href="<?= Html::encode($urlGenerator->generate('admin/user/edit', ['id' => $user->getId()])) ?>" class="font-medium text-gray-900 hover:underline">
-                                            Edit
-                                        </a>
+                                            <?php if ($canEdit): ?>
+                                                <a href="<?= Html::encode($urlGenerator->generate('admin/user/edit', ['id' => $user->getId()])) ?>" class="font-medium text-gray-900 hover:underline">
+                                                    Edit
+                                                </a>
+                                            <?php endif; ?>
 
-                                        <?php $deleteForm = Html::form()
-                                            ->post($urlGenerator->generate('admin/user/delete', ['id' => $user->getId()]))
-                                            ->csrf($csrf); ?>
+                                            <?php if ($canDelete): ?>
+                                                <?php $deleteForm = Html::form()
+                                                    ->post($urlGenerator->generate('admin/user/delete', ['id' => $user->getId()]))
+                                                    ->csrf($csrf); ?>
 
-                                        <?= $deleteForm->open() ?>
-                                        <button type="submit" class="border-0 bg-transparent p-0 font-medium text-red-600 hover:underline" onclick="return confirm('Delete this user?')">
-                                            Delete
-                                        </button>
-                                        <?= $deleteForm->close() ?>
-                                    </div>
-                                </td>
+                                                <?= $deleteForm->open() ?>
+                                                <button type="submit" class="border-0 bg-transparent p-0 font-medium text-red-600 hover:underline" onclick="return confirm('Delete this user?')">
+                                                    Delete
+                                                </button>
+                                                <?= $deleteForm->close() ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach ?>
                         </tbody>

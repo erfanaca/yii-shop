@@ -50,19 +50,13 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
     private function resolvePermission(string $path): ?string
     {
         $parts = explode('/', $path);
+        $resourceSegment = $parts[1] ?? null;
 
-        if (($parts[1] ?? null) === 'users' && ($parts[3] ?? null) === 'roles') {
-            return 'user.roles.manage';
-        }
-
-        $resource = $parts[1] ?? null;
-        $action = $parts[2] ?? 'index';
-
-        if ($resource === null) {
+        if ($resourceSegment === null) {
             return null;
         }
 
-        $resource = match ($resource) {
+        $resource = match ($resourceSegment) {
             'products' => 'product',
             'orders' => 'order',
             'categories' => 'category',
@@ -76,13 +70,36 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
             return null;
         }
 
-        return match ($action) {
-            'create' => $resource . '.create',
-            'update', 'edit' => $resource . '.update',
-            'delete' => $resource . '.delete',
-            'view', 'show' => $resource . '.view',
-            default => $resource . '.manage',
-        };
-    }
+        $segments = array_slice($parts, 2);
 
+        if ($resource === 'user' && in_array('roles', $segments, true)) {
+            return 'user.roles';
+        }
+
+        if ($segments === []) {
+            return $resource . '.index';
+        }
+
+        if (($segments[0] ?? null) === 'create') {
+            return $resource . '.create';
+        }
+
+        if (in_array('delete', $segments, true)) {
+            return $resource . '.delete';
+        }
+
+        if (in_array('edit', $segments, true) || in_array('update', $segments, true)) {
+            return $resource . '.edit';
+        }
+
+        if (in_array('view', $segments, true) || in_array('show', $segments, true)) {
+            return $resource . '.view';
+        }
+
+        if (count($segments) === 1 && ctype_digit($segments[0])) {
+            return $resource . '.view';
+        }
+
+        return null;
+    }
 }

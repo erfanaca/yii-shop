@@ -10,6 +10,9 @@ use Yiisoft\Yii\View\Renderer\Csrf;
 
 /**
  * @var Product[] $products
+ * @var bool $canCreate
+ * @var bool $canEdit
+ * @var bool $canDelete
  * @var WebView $this
  * @var UrlGeneratorInterface $urlGenerator
  * @var Csrf $csrf
@@ -45,12 +48,14 @@ $buttonClass = implode(' ', [
                 <p class="mt-2 text-sm text-gray-500">Manage your products</p>
             </div>
 
-            <a
-                href="<?= Html::encode($urlGenerator->generate('admin/product/create')) ?>"
-                class="<?= $buttonClass ?>"
-            >
-                Create Product
-            </a>
+            <?php if ($canCreate): ?>
+                <a
+                    href="<?= Html::encode($urlGenerator->generate('admin/product/create')) ?>"
+                    class="<?= $buttonClass ?>"
+                >
+                    Create Product
+                </a>
+            <?php endif; ?>
         </div>
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -59,12 +64,14 @@ $buttonClass = implode(' ', [
                     <h2 class="text-sm font-medium text-gray-900">No products found</h2>
                     <p class="mt-1 text-sm text-gray-500">Create your first product to get started.</p>
 
-                    <a
-                        href="<?= Html::encode($urlGenerator->generate('admin/product/create')) ?>"
-                        class="mt-5 <?= $buttonClass ?>"
-                    >
-                        Create Product
-                    </a>
+                    <?php if ($canCreate): ?>
+                        <a
+                            href="<?= Html::encode($urlGenerator->generate('admin/product/create')) ?>"
+                            class="mt-5 <?= $buttonClass ?>"
+                        >
+                            Create Product
+                        </a>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
@@ -80,9 +87,11 @@ $buttonClass = implode(' ', [
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                 Price
                             </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                                Actions
-                            </th>
+                            <?php if ($canEdit || $canDelete): ?>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+                                    Actions
+                                </th>
+                            <?php endif; ?>
                         </tr>
                         </thead>
 
@@ -109,30 +118,36 @@ $buttonClass = implode(' ', [
                                     <?= Html::encode($product->getPrice()) ?>
                                 </td>
 
-                                <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                    <div class="inline-flex items-center gap-3">
-                                        <a
-                                            href="<?= Html::encode($urlGenerator->generate('admin/product/edit', ['id' => $product->getId()])) ?>"
-                                            class="font-medium text-gray-900 hover:underline"
-                                        >
-                                            Edit
-                                        </a>
+                                <?php if ($canEdit || $canDelete): ?>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
+                                        <div class="inline-flex items-center gap-3">
+                                            <?php if ($canEdit): ?>
+                                                <a
+                                                    href="<?= Html::encode($urlGenerator->generate('admin/product/edit', ['id' => $product->getId()])) ?>"
+                                                    class="font-medium text-gray-900 hover:underline"
+                                                >
+                                                    Edit
+                                                </a>
+                                            <?php endif; ?>
 
-                                        <?php $deleteForm = Html::form()
-                                            ->post($urlGenerator->generate('admin/product/delete', ['id' => $product->getId()]))
-                                            ->csrf($csrf); ?>
+                                            <?php if ($canDelete): ?>
+                                                <?php $deleteForm = Html::form()
+                                                    ->post($urlGenerator->generate('admin/product/delete', ['id' => $product->getId()]))
+                                                    ->csrf($csrf); ?>
 
-                                        <?= $deleteForm->open() ?>
-                                        <button
-                                            type="submit"
-                                            class="cursor-pointer border-0 bg-transparent p-0 font-medium text-red-600 hover:underline"
-                                            onclick="return confirm('Delete this product?')"
-                                        >
-                                            Delete
-                                        </button>
-                                        <?= $deleteForm->close() ?>
-                                    </div>
-                                </td>
+                                                <?= $deleteForm->open() ?>
+                                                <button
+                                                    type="submit"
+                                                    class="cursor-pointer border-0 bg-transparent p-0 font-medium text-red-600 hover:underline"
+                                                    onclick="return confirm('Delete this product?')"
+                                                >
+                                                    Delete
+                                                </button>
+                                                <?= $deleteForm->close() ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach ?>
                         </tbody>

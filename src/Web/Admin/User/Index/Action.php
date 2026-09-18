@@ -15,7 +15,8 @@ final readonly class Action
         private UserRepository $users,
         private PermissionChecker $permissionChecker,
         private WebViewRenderer $viewRenderer,
-    ) {}
+    ) {
+    }
 
     public function __invoke(): ResponseInterface
     {
@@ -28,7 +29,10 @@ final readonly class Action
         return $this->viewRenderer->render(__DIR__ . '/template', [
             'users' => $users,
             'rolesByUserId' => $this->users->roleTitlesByUserIds($userIds),
-            'canManageRoles' => $this->permissionChecker->can('user.roles.manage'),
+            'canCreate' => $this->permissionChecker->can('user.create'),
+            'canEdit' => $this->permissionChecker->can('user.edit'),
+            'canDelete' => $this->permissionChecker->can('user.delete'),
+            'canManageRoles' => $this->permissionChecker->can('user.roles'),
         ]);
     }
 }
