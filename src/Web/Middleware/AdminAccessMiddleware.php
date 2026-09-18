@@ -60,6 +60,7 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
 
         $resource = match ($resource) {
             'products' => 'product',
+            'orders' => 'order',
             'categories' => 'category',
             'users' => 'user',
             'roles' => 'role',

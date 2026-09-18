@@ -15,25 +15,18 @@ final class PermissionSeeder
 
     public function run(): void
     {
-        $resources = [
-            'user',
-            'product',
-            'category',
-            'role',
-            'permission',
-        ];
-
-        $actions = [
-            'manage',
-            'view',
-            'create',
-            'update',
-            'delete',
+        $resourceActions = [
+            'user' => ['manage', 'view', 'create', 'update', 'delete'],
+            'product' => ['manage', 'view', 'create', 'update', 'delete'],
+            'category' => ['manage', 'view', 'create', 'update', 'delete'],
+            'role' => ['manage', 'view', 'create', 'update', 'delete'],
+            'permission' => ['manage', 'view', 'create', 'update', 'delete'],
+            'order' => ['manage', 'view'],
         ];
 
         $permissions = [];
 
-        foreach ($resources as $resource) {
+        foreach ($resourceActions as $resource => $actions) {
             foreach ($actions as $action) {
                 $permissions[] = $resource . '.' . $action;
             }

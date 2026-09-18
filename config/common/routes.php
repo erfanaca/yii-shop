@@ -74,6 +74,14 @@ return [
                 ->action(Web\Admin\Product\Delete\Action::class)
                 ->name('admin/product/delete'),
 
+            Route::get('/admin/orders')
+                ->action(Web\Admin\Order\Index\Action::class)
+                ->name('admin/order/index'),
+
+            Route::get('/admin/orders/view/{id:\d+}')
+                ->action(Web\Admin\Order\View\Action::class)
+                ->name('admin/order/view'),
+
             Route::get('/admin/categories')
                 ->action(Web\Admin\Category\Index\Action::class)
                 ->name('admin/category/index'),

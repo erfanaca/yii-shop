@@ -31,6 +31,7 @@ $currentPath = $currentRoute->getUri()?->getPath() ?? '';
 $isAdmin = str_starts_with($currentPath, '/admin');
 
 $isProductsActive = str_starts_with($currentPath, '/admin/products');
+$isOrdersActive = str_starts_with($currentPath, '/admin/orders');
 $isCategoriesActive = str_starts_with($currentPath, '/admin/categories');
 $isUsersActive = str_starts_with($currentPath, '/admin/users');
 $isRolesActive = str_starts_with($currentPath, '/admin/roles');
@@ -148,6 +149,27 @@ $this->beginPage();
                         </svg>
 
                         <span>Products</span>
+                    </a>
+
+                    <a
+                        href="<?= Html::encode(
+                            $urlGenerator->generate('admin/order/index')
+                        ) ?>"
+                        class="<?= $sidebarItemClass($isOrdersActive) ?>">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.8"
+                            stroke="currentColor"
+                            class="h-5 w-5 shrink-0">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6 2.75h12a1.25 1.25 0 0 1 1.25 1.25v17l-3-1.75L13.5 21l-3-1.75L7.75 21 4.75 19.25V4A1.25 1.25 0 0 1 6 2.75Zm2.25 5h7.5m-7.5 4h7.5m-7.5 4h4.5"/>
+                        </svg>
+
+                        <span>Orders</span>
                     </a>
 
                     <a
