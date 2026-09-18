@@ -203,6 +203,27 @@ final readonly class CartService
         $this->touchCart($cartId, new DateTimeImmutable());
     }
 
+    public function complete(int $userId): void
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            throw new \RuntimeException('Active cart not found.');
+        }
+
+        $this->db
+            ->createCommand()
+            ->update(
+                'carts',
+                [
+                    'status' => 'COMPLETED',
+                    'updated_at' => new DateTimeImmutable(),
+                ],
+                ['id' => $cartId],
+            )
+            ->execute();
+    }
+
     public function updateQuantity(int $userId, int $productId, int $quantity): void
     {
         if ($quantity <= 0) {

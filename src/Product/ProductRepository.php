@@ -7,6 +7,7 @@ namespace App\Product;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+use Yiisoft\Db\Expression\Expression;
 
 final class ProductRepository
 {
@@ -125,6 +126,24 @@ final class ProductRepository
             createdAt: $product->getCreatedAt(),
             updatedAt: $updatedAt,
         );
+    }
+
+    public function decreaseStock(int $productId, int $quantity): bool
+    {
+        if ($quantity <= 0) {
+            return false;
+        }
+
+        $affectedRows = $this->db
+            ->createCommand()
+            ->update(
+                'products',
+                ['quantity' => new Expression('quantity - ' . $quantity)],
+                ['and', ['id' => $productId], ['>=', 'quantity', $quantity]],
+            )
+            ->execute();
+
+        return $affectedRows === 1;
     }
 
     public function delete(Product $product): void

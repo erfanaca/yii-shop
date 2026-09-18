@@ -50,6 +50,10 @@ return [
                 ->action(Web\Cart\Remove\Action::class)
                 ->name('cart/remove'),
 
+            Route::post('/checkout/simulate/{result}')
+                ->action(Web\Checkout\Simulate\Action::class)
+                ->name('checkout/simulate'),
+
             Route::get('/admin/products')
                 ->action(Web\Admin\Product\Index\Action::class)
                 ->name('admin/product/index'),
