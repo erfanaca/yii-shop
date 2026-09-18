@@ -10,29 +10,30 @@ final class RoleSeeder
 {
     public function __construct(
         private ConnectionInterface $db,
-    ) {}
+    ) {
+    }
 
     public function run(): void
     {
-        $this->db->createCommand()->insert(
-            'roles',
-            [
-                'title' => 'super-admin',
-            ]
-        )->execute();
+        $roles = [
+            'super-admin',
+            'admin',
+            'customer',
+        ];
 
-        $this->db->createCommand()->insert(
-            'roles',
-            [
-                'title' => 'admin',
-            ]
-        )->execute();
+        foreach ($roles as $role) {
+            $exists = $this->db->createCommand(
+                'SELECT id FROM roles WHERE title = :title',
+                [':title' => $role],
+            )->queryScalar();
 
-        $this->db->createCommand()->insert(
-            'roles',
-            [
-                'title' => 'customer',
-            ]
-        )->execute();
+            if ($exists !== false) {
+                continue;
+            }
+
+            $this->db->createCommand()
+                ->insert('roles', ['title' => $role])
+                ->execute();
+        }
     }
 }

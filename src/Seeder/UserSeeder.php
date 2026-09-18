@@ -16,42 +16,66 @@ final class UserSeeder
     public function run(): void
     {
         $email = 'admin@example.com';
-        $now = time();
 
-        $role = $this->db->createCommand(
+        $roleId = $this->db->createCommand(
             'SELECT id FROM roles WHERE title = :title',
-            [
-                ':title' => 'super-admin',
-            ]
+            [':title' => 'super-admin'],
         )->queryScalar();
 
-        if ($role === false) {
+        if ($roleId === false) {
             throw new \RuntimeException(
                 'The "super-admin" role does not exist.'
             );
         }
 
-        $this->db->createCommand()->insert(
-            'users',
-            [
-                'email' => $email,
-                'password_hash' => password_hash(
-                    'password',
-                    PASSWORD_DEFAULT
-                ),
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]
-        )->execute();
+        $userId = $this->db->createCommand(
+            'SELECT id FROM users WHERE email = :email',
+            [':email' => $email],
+        )->queryScalar();
 
-        $userId = $this->db->getLastInsertID();
+        if ($userId === false) {
+            $now = time();
 
-        $this->db->createCommand()->insert(
-            'user_roles',
+            $this->db->createCommand()
+                ->insert(
+                    'users',
+                    [
+                        'email' => $email,
+                        'password_hash' => password_hash(
+                            'password',
+                            PASSWORD_DEFAULT,
+                        ),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                )
+                ->execute();
+
+            $userId = $this->db->getLastInsertID();
+        }
+
+        $userRoleExists = $this->db->createCommand(
+            <<<'SQL'
+            SELECT user_id
+            FROM user_roles
+            WHERE user_id = :user_id AND role_id = :role_id
+            SQL,
             [
-                'user_id' => $userId,
-                'role_id' => $role,
-            ]
-        )->execute();
+                ':user_id' => $userId,
+                ':role_id' => $roleId,
+            ],
+        )->queryScalar();
+
+        if ($userRoleExists === false) {
+            $this->db->createCommand()
+                ->insert(
+                    'user_roles',
+                    [
+                        'user_id' => $userId,
+                        'role_id' => $roleId,
+                    ],
+                )
+                ->execute();
+        }
     }
 }
