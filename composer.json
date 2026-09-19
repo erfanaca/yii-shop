@@ -71,7 +71,8 @@
         "yiisoft/yii-http": "^1.1.1",
         "yiisoft/yii-runner-console": "^2.2.1",
         "yiisoft/yii-runner-http": "^3.2.1",
-        "yiisoft/yii-view-renderer": "^7.4.1"
+        "yiisoft/yii-view-renderer": "^7.4.1",
+        "ext-redis": "*"
     },
     "require-dev": {
         "vlucas/phpdotenv": "^5.6",
