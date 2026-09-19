@@ -6,11 +6,13 @@ use App\Product\Product;
 use App\Product\ProductImage;
 use Yiisoft\Html\Html;
 use Yiisoft\View\WebView;
+use Yiisoft\Router\FastRoute\UrlGenerator;
 
 /**
  * @var Product[] $products
  * @var array<int, ProductImage[]> $images
  * @var WebView $this
+ * @var UrlGenerator $urlGenerator
  */
 
 $this->setTitle('Products');
@@ -37,43 +39,42 @@ $this->setTitle('Products');
                     <?php $productImages = $images[$product->getId()] ?? []; ?>
 
                     <a href="<?= Html::encode($urlGenerator->generate('product/view', ['id' => $product->getId()])) ?>" class="block">
-                    <article class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                        <div class="aspect-square bg-gray-100">
-                            <?php if ($productImages !== []): ?>
-                                <img
-                                    src="<?= Html::encode('/' . ltrim($productImages[0]->getPath(), '/')) ?>"
-                                    alt="<?= Html::encode($product->getTitle()) ?>"
-                                    class="h-full w-full object-cover"
-                                >
-                            <?php else: ?>
-                                <div class="flex h-full items-center justify-center text-sm text-gray-400">
-                                    No Image
-                                </div>
-                            <?php endif ?>
-                        </div>
-
-                        <div class="p-5">
-                            <h2 class="truncate text-lg font-semibold text-gray-900">
-                                <?= Html::encode($product->getTitle()) ?>
-                            </h2>
-
-                            <?php if ($product->getDescription() !== null): ?>
-                                <p class="mt-2 h-10 overflow-hidden text-sm leading-5 text-gray-500">
-                                    <?= Html::encode($product->getDescription()) ?>
-                                </p>
-                            <?php endif ?>
-
-                            <div class="mt-5 flex items-center justify-between">
-                                <span class="text-lg font-bold text-gray-900">
-                                    <?= Html::encode($product->getPrice()) ?>
-                                </span>
-
-                                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                                    Stock: <?= Html::encode((string) $product->getQuantity()) ?>
-                                </span>
+                        <article class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                            <div class="aspect-square bg-gray-100">
+                                <?php if ($productImages !== []): ?>
+                                    <img
+                                        src="<?= Html::encode('/' . ltrim($productImages[0]->getPath(), '/')) ?>"
+                                        alt="<?= Html::encode($product->getTitle()) ?>"
+                                        class="h-full w-full object-cover">
+                                <?php else: ?>
+                                    <div class="flex h-full items-center justify-center text-sm text-gray-400">
+                                        No Image
+                                    </div>
+                                <?php endif ?>
                             </div>
-                        </div>
-                    </article>
+
+                            <div class="p-5">
+                                <h2 class="truncate text-lg font-semibold text-gray-900">
+                                    <?= Html::encode($product->getTitle()) ?>
+                                </h2>
+
+                                <?php if ($product->getDescription() !== null): ?>
+                                    <p class="mt-2 h-10 overflow-hidden text-sm leading-5 text-gray-500">
+                                        <?= Html::encode($product->getDescription()) ?>
+                                    </p>
+                                <?php endif ?>
+
+                                <div class="mt-5 flex items-center justify-between">
+                                    <span class="text-lg font-bold text-gray-900">
+                                        <?= Html::encode($product->getPrice()) ?>
+                                    </span>
+
+                                    <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                                        Stock: <?= Html::encode((string) $product->getQuantity()) ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
                     </a>
                 <?php endforeach ?>
             </div>

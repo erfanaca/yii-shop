@@ -30,8 +30,7 @@ $this->setTitle($product->getTitle());
                         <img
                             src="<?= Html::encode($image->getPath()) ?>"
                             class="h-72 w-full rounded-2xl border border-gray-200 object-cover shadow-sm"
-                            alt="<?= Html::encode($product->getTitle()) ?>"
-                        >
+                            alt="<?= Html::encode($product->getTitle()) ?>">
                     <?php endforeach; ?>
 
                     <?php if ($images === []): ?>
@@ -53,7 +52,6 @@ $this->setTitle($product->getTitle());
 
                 <div class="mt-6 space-y-3 text-sm text-gray-600">
                     <p><b>Quantity:</b> <?= Html::encode((string)$product->getQuantity()) ?></p>
-                    <p><b>Created:</b> <?= Html::encode($product->getCreatedAt()->format('Y-m-d')) ?></p>
                 </div>
 
                 <?php
@@ -76,14 +74,13 @@ $this->setTitle($product->getTitle());
 
                     <div class="grid grid-cols-[3rem_1fr_3rem] items-stretch gap-2">
                         <?= $decreaseCartForm->open() ?>
-                            <button
-                                type="submit"
-                                class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-300 bg-white text-xl font-semibold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
-                                aria-label="Remove one item from cart"
-                                <?= $cartQuantity <= 0 ? 'disabled' : '' ?>
-                            >
-                                −
-                            </button>
+                        <button
+                            type="submit"
+                            class="flex h-12 w-full items-center justify-center rounded-lg border border-gray-300 bg-white text-xl font-semibold text-gray-800 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label="Remove one item from cart"
+                            <?= $cartQuantity <= 0 ? 'disabled' : '' ?>>
+                            −
+                        </button>
                         <?= $decreaseCartForm->close() ?>
 
                         <div class="flex h-12 items-center justify-center rounded-lg bg-gray-900 px-4 text-sm font-semibold text-white">
@@ -93,13 +90,12 @@ $this->setTitle($product->getTitle());
                         </div>
 
                         <?= $addToCartForm->open() ?>
-                            <button
-                                type="submit"
-                                class="flex h-12 w-full items-center justify-center rounded-lg bg-gray-900 text-xl font-semibold text-white transition hover:bg-gray-800"
-                                aria-label="Add one item to cart"
-                            >
-                                +
-                            </button>
+                        <button
+                            type="submit"
+                            class="flex h-12 w-full items-center justify-center rounded-lg bg-gray-900 text-xl font-semibold text-white transition hover:bg-gray-800"
+                            aria-label="Add one item to cart">
+                            +
+                        </button>
                         <?= $addToCartForm->close() ?>
                     </div>
 
