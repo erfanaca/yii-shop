@@ -1,16 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Role;
 
 use App\Permission\Permission;
-use DateTimeImmutable;
 use Yiisoft\Db\Connection\ConnectionInterface;
 
 final class RoleRepository
 {
-    public function __construct(private readonly ConnectionInterface $db)
-    {
-    }
+    public function __construct(private readonly ConnectionInterface $db) {}
 
     public function findAll(): array
     {

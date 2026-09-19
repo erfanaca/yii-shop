@@ -224,37 +224,6 @@ final readonly class CartService
             ->execute();
     }
 
-    public function updateQuantity(int $userId, int $productId, int $quantity): void
-    {
-        if ($quantity <= 0) {
-            $this->removeProduct($userId, $productId);
-            return;
-        }
-
-        $cartId = $this->findActiveCartId($userId);
-
-        if ($cartId === null) {
-            return;
-        }
-
-        $this->db
-            ->createCommand()
-            ->update(
-                'cart_items',
-                [
-                    'quantity' => $quantity,
-                    'updated_at' => new DateTimeImmutable(),
-                ],
-                [
-                    'cart_id' => $cartId,
-                    'product_id' => $productId,
-                ],
-            )
-            ->execute();
-
-        $this->touchCart($cartId, new DateTimeImmutable());
-    }
-
     private function getAvailableProductQuantity(int $productId): int
     {
         $product = $this->db
