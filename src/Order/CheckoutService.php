@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Order;
 
 use App\Cart\CartService;
+use App\Discount\CartDiscountService;
+use App\Discount\DiscountApplicationException;
 use App\Product\ProductRepository;
 use Yiisoft\Db\Connection\ConnectionInterface;
 
@@ -15,6 +17,7 @@ final readonly class CheckoutService
         private CartService $cartService,
         private OrderRepository $orders,
         private ProductRepository $products,
+        private CartDiscountService $discounts,
     ) {
     }
 
@@ -27,8 +30,6 @@ final readonly class CheckoutService
             if ($items === []) {
                 throw new CheckoutException('Your cart is empty.');
             }
-
-            $totalMinorUnits = 0;
 
             foreach ($items as $item) {
                 $quantity = (int) $item['quantity'];
@@ -43,13 +44,25 @@ final readonly class CheckoutService
                         sprintf('Not enough stock for "%s".', (string) $item['title']),
                     );
                 }
-
-                $totalMinorUnits += $this->toMinorUnits((string) $item['unit_price']) * $quantity;
             }
 
+            try {
+                $pricing = $this->discounts->requireValidPricing($userId, $items);
+            } catch (DiscountApplicationException $exception) {
+                throw new CheckoutException($exception->getMessage(), previous: $exception);
+            }
+
+            $discountCode = $pricing->getDiscountCode();
+
             $order = $this->orders->createPending(
-                $userId,
-                $this->fromMinorUnits($totalMinorUnits),
+                userId: $userId,
+                totalAmount: $pricing->getTotalAmount(),
+                subtotalAmount: $pricing->getSubtotalAmount(),
+                discountAmount: $pricing->getDiscountAmount(),
+                discountCode: $discountCode?->getCode(),
+                discountType: $discountCode?->getType()->value,
+                discountValue: $discountCode?->getValue(),
+                discountEligibleSubtotal: $pricing->getEligibleSubtotalAmount(),
             );
 
             foreach ($items as $item) {
@@ -86,24 +99,5 @@ final readonly class CheckoutService
         });
 
         return $order;
-    }
-
-    private function toMinorUnits(string $amount): int
-    {
-        $normalized = trim($amount);
-
-        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $normalized)) {
-            throw new CheckoutException('Invalid product price in cart.');
-        }
-
-        [$whole, $fraction] = array_pad(explode('.', $normalized, 2), 2, '');
-        $fraction = str_pad($fraction, 2, '0');
-
-        return ((int) $whole * 100) + (int) substr($fraction, 0, 2);
-    }
-
-    private function fromMinorUnits(int $amount): string
-    {
-        return sprintf('%d.%02d', intdiv($amount, 100), $amount % 100);
     }
 }

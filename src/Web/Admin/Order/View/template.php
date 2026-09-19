@@ -77,6 +77,20 @@ $status = match ($order->getStatus()) {
                         <dt class="text-xs font-medium text-gray-400">Transaction Number</dt>
                         <dd class="mt-1 font-mono text-sm font-semibold text-gray-900"><?= Html::encode($order->getTransactionNumber()) ?></dd>
                     </div>
+
+                    <?php if ($order->hasDiscount()): ?>
+                        <div class="rounded-xl border border-green-200 bg-green-50/60 p-4">
+                            <dt class="text-xs font-medium uppercase tracking-wider text-green-700">Discount</dt>
+                            <dd class="mt-2 flex flex-wrap items-center justify-between gap-3">
+                                <span class="rounded-md bg-white px-2.5 py-1.5 font-mono text-sm font-semibold text-green-800 ring-1 ring-inset ring-green-600/20">
+                                    <?= Html::encode((string) $order->getDiscountCode()) ?>
+                                </span>
+                                <span class="text-base font-bold text-green-800">
+                                    -<?= Html::encode(number_format((float) $order->getDiscountAmount(), 2, '.', '')) ?>
+                                </span>
+                            </dd>
+                        </div>
+                    <?php endif; ?>
                 </dl>
             </section>
         </div>

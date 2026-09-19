@@ -22,6 +22,7 @@ final class PermissionSeeder
             'role',
             'permission',
             'order',
+            'discount',
         ];
 
         $actions = ['index', 'create', 'edit', 'delete', 'view'];

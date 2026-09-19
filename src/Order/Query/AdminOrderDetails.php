@@ -18,6 +18,8 @@ final readonly class AdminOrderDetails
         private string $userEmail,
         private OrderStatus $status,
         private string $totalAmount,
+        private ?string $discountCode,
+        private string $discountAmount,
         private string $transactionNumber,
         private string $invoiceNumber,
         private DateTimeImmutable $createdAt,
@@ -49,6 +51,21 @@ final readonly class AdminOrderDetails
     public function getTotalAmount(): string
     {
         return $this->totalAmount;
+    }
+
+    public function getDiscountCode(): ?string
+    {
+        return $this->discountCode;
+    }
+
+    public function getDiscountAmount(): string
+    {
+        return $this->discountAmount;
+    }
+
+    public function hasDiscount(): bool
+    {
+        return $this->discountCode !== null && trim($this->discountCode) !== '';
     }
 
     public function getTransactionNumber(): string

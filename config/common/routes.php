@@ -50,6 +50,14 @@ return [
                 ->action(Web\Cart\Remove\Action::class)
                 ->name('cart/remove'),
 
+            Route::post('/cart/discount/apply')
+                ->action(Web\Cart\Discount\Apply\Action::class)
+                ->name('cart/discount/apply'),
+
+            Route::post('/cart/discount/remove')
+                ->action(Web\Cart\Discount\Remove\Action::class)
+                ->name('cart/discount/remove'),
+
             Route::post('/checkout/simulate/{result}')
                 ->action(Web\Checkout\Simulate\Action::class)
                 ->name('checkout/simulate'),
@@ -147,5 +155,26 @@ return [
             Route::post('/admin/permissions/{id:\d+}/delete')
                 ->action(Web\Admin\Permission\Delete\Action::class)
                 ->name('admin/permission/delete'),
+
+
+            Route::get('/admin/discounts')
+                ->action(Web\Admin\Discount\Index\Action::class)
+                ->name('admin/discount/index'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/discounts/create')
+                ->action(Web\Admin\Discount\Create\Action::class)
+                ->name('admin/discount/create'),
+
+            Route::get('/admin/discounts/{id:\d+}')
+                ->action(Web\Admin\Discount\View\Action::class)
+                ->name('admin/discount/view'),
+
+            Route::methods([Method::GET, Method::POST], '/admin/discounts/{id:\d+}/edit')
+                ->action(Web\Admin\Discount\Edit\Action::class)
+                ->name('admin/discount/edit'),
+
+            Route::post('/admin/discounts/{id:\d+}/delete')
+                ->action(Web\Admin\Discount\Delete\Action::class)
+                ->name('admin/discount/delete'),
         ),
 ];

@@ -125,6 +125,20 @@ $statusPresentation = static fn (OrderStatus $status): array => match ($status) 
                                         <?= Html::encode($order->getCreatedAt()->format('Y-m-d H:i')) ?>
                                     </p>
                                 </div>
+
+                                <?php if ($order->hasDiscount()): ?>
+                                    <div>
+                                        <p class="text-xs font-medium uppercase tracking-wide text-gray-400">Discount Code</p>
+                                        <div class="mt-1 flex flex-wrap items-center gap-2">
+                                            <span class="rounded-md bg-green-50 px-2 py-1 font-mono text-xs font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                <?= Html::encode((string) $order->getDiscountCode()) ?>
+                                            </span>
+                                            <span class="text-sm font-semibold text-green-700">
+                                                -<?= Html::encode(number_format((float) $order->getDiscountAmount(), 2, '.', '')) ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="flex items-center gap-4 lg:text-right">

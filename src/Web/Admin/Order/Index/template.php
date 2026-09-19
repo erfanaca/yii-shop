@@ -85,8 +85,17 @@ $statusPresentation = static fn (OrderStatus $status): array => match ($status) 
                                         <?= Html::encode($status['label']) ?>
                                     </span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">
-                                    <?= Html::encode(number_format((float) $order->getTotalAmount(), 2, '.', '')) ?>
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <div class="text-sm font-semibold text-gray-900">
+                                        <?= Html::encode(number_format((float) $order->getTotalAmount(), 2, '.', '')) ?>
+                                    </div>
+                                    <?php if ($order->hasDiscount()): ?>
+                                        <div class="mt-1 flex items-center gap-1.5 text-xs text-green-700">
+                                            <span class="font-mono font-semibold"><?= Html::encode((string) $order->getDiscountCode()) ?></span>
+                                            <span aria-hidden="true">·</span>
+                                            <span>-<?= Html::encode(number_format((float) $order->getDiscountAmount(), 2, '.', '')) ?></span>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
                                     <?= Html::encode($order->getCreatedAt()->format('Y-m-d H:i')) ?>

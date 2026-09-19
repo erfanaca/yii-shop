@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\PermissionChecker;
 use App\Web\Shared\Layout\Main\MainAsset;
 use Yiisoft\Html\Html;
 use Yiisoft\User\CurrentUser;
@@ -16,6 +17,7 @@ use Yiisoft\User\CurrentUser;
  * @var Yiisoft\Router\CurrentRoute $currentRoute
  * @var Yiisoft\Router\UrlGeneratorInterface $urlGenerator
  * @var CurrentUser $currentUser
+ * @var PermissionChecker $permissionChecker
  */
 
 $assetManager->register(MainAsset::class);
@@ -33,9 +35,11 @@ $isAdmin = str_starts_with($currentPath, '/admin');
 $isProductsActive = str_starts_with($currentPath, '/admin/products');
 $isOrdersActive = str_starts_with($currentPath, '/admin/orders');
 $isCategoriesActive = str_starts_with($currentPath, '/admin/categories');
+$isDiscountsActive = str_starts_with($currentPath, '/admin/discounts');
 $isUsersActive = str_starts_with($currentPath, '/admin/users');
 $isRolesActive = str_starts_with($currentPath, '/admin/roles');
 $isPermissionsActive = str_starts_with($currentPath, '/admin/permissions');
+$canAccessDiscounts = $permissionChecker->can('discount.index');
 
 $sidebarItemClass = static function (bool $active): string {
     $base = implode(' ', [
@@ -193,6 +197,17 @@ $this->beginPage();
 
                         <span>Categories</span>
                     </a>
+
+                    <?php if ($canAccessDiscounts): ?>
+                        <a
+                            href="<?= Html::encode($urlGenerator->generate('admin/discount/index')) ?>"
+                            class="<?= $sidebarItemClass($isDiscountsActive) ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="h-5 w-5 shrink-0">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25 15 8.25m-5.25.375h.008v.008H9.75v-.008Zm4.5 5.25h.008v.008h-.008v-.008ZM3.75 5.25A2.25 2.25 0 0 1 6 3h12a2.25 2.25 0 0 1 2.25 2.25v3.129a2.25 2.25 0 0 0 0 4.242v3.129A2.25 2.25 0 0 1 18 18H6a2.25 2.25 0 0 1-2.25-2.25v-3.129a2.25 2.25 0 0 0 0-4.242V5.25Z"/>
+                            </svg>
+                            <span>Discount Codes</span>
+                        </a>
+                    <?php endif; ?>
 
                     <a
                         href="<?= Html::encode(
@@ -353,6 +368,15 @@ $this->beginPage();
                         ">
                         Categories
                     </a>
+
+                    <?php if ($canAccessDiscounts): ?>
+                        <a
+                            href="<?= Html::encode($urlGenerator->generate('admin/discount/index')) ?>"
+                            class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition <?= $isDiscountsActive ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600' ?>"
+                        >
+                            Discounts
+                        </a>
+                    <?php endif; ?>
 
                 </div>
             </div>

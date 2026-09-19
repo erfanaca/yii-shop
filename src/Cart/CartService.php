@@ -203,6 +203,72 @@ final readonly class CartService
         $this->touchCart($cartId, new DateTimeImmutable());
     }
 
+    public function getAppliedDiscountCodeId(int $userId): ?int
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            return null;
+        }
+
+        $cart = $this->db
+            ->createQuery()
+            ->select(['discount_code_id'])
+            ->from('carts')
+            ->where(['id' => $cartId])
+            ->one();
+
+        if ($cart === null || $cart === false || $cart['discount_code_id'] === null) {
+            return null;
+        }
+
+        return (int) $cart['discount_code_id'];
+    }
+
+    public function applyDiscountCode(int $userId, int $discountCodeId): void
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            throw new \RuntimeException('Active cart not found.');
+        }
+
+        $now = new DateTimeImmutable();
+
+        $this->db
+            ->createCommand()
+            ->update(
+                'carts',
+                [
+                    'discount_code_id' => $discountCodeId,
+                    'updated_at' => $now,
+                ],
+                ['id' => $cartId],
+            )
+            ->execute();
+    }
+
+    public function removeDiscountCode(int $userId): void
+    {
+        $cartId = $this->findActiveCartId($userId);
+
+        if ($cartId === null) {
+            return;
+        }
+
+        $this->db
+            ->createCommand()
+            ->update(
+                'carts',
+                [
+                    'discount_code_id' => null,
+                    'updated_at' => new DateTimeImmutable(),
+                ],
+                ['id' => $cartId],
+            )
+            ->execute();
+    }
+
     public function complete(int $userId): void
     {
         $cartId = $this->findActiveCartId($userId);

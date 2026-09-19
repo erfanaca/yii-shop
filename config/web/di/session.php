@@ -7,9 +7,9 @@ use Yiisoft\Session\Session;
 use Yiisoft\Session\SessionInterface;
 
 return [
-    SessionInterface::class => static function (): SessionInterface {
-        return new Session(
-            handler: new RedisSessionHandler(),
-        );
-    },
+//    SessionInterface::class => static function (): SessionInterface {
+//        return new Session(
+//            handler: new RedisSessionHandler(),
+//        );
+//    },
 ];

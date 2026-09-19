@@ -63,6 +63,7 @@ final readonly class AdminAccessMiddleware implements MiddlewareInterface
             'users' => 'user',
             'roles' => 'role',
             'permissions' => 'permission',
+            'discounts' => 'discount',
             default => null,
         };
 

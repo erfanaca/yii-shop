@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Auth\PermissionChecker;
 use App\Shared\ApplicationParams;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Assets\AssetManager;
@@ -28,6 +29,7 @@ return [
             'urlGenerator' => Reference::to(UrlGeneratorInterface::class),
             'currentRoute' => Reference::to(CurrentRoute::class),
             'currentUser' => Reference::to(CurrentUser::class),
+            'permissionChecker' => Reference::to(PermissionChecker::class),
         ],
     ],
 

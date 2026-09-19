@@ -18,8 +18,16 @@ final readonly class OrderRepository
     ) {
     }
 
-    public function createPending(int $userId, string $totalAmount): Order
-    {
+    public function createPending(
+        int $userId,
+        string $totalAmount,
+        string $subtotalAmount,
+        string $discountAmount = '0.00',
+        ?string $discountCode = null,
+        ?string $discountType = null,
+        ?string $discountValue = null,
+        ?string $discountEligibleSubtotal = null,
+    ): Order {
         $now = new DateTimeImmutable();
         $transactionNumber = $this->generateUniqueReference();
         $invoiceNumber = $this->generateUniqueReference([$transactionNumber]);
@@ -30,6 +38,12 @@ final readonly class OrderRepository
                 'user_id' => $userId,
                 'status' => OrderStatus::Pending->value,
                 'total_amount' => $totalAmount,
+                'subtotal_amount' => $subtotalAmount,
+                'discount_amount' => $discountAmount,
+                'discount_code' => $discountCode,
+                'discount_type' => $discountType,
+                'discount_value' => $discountValue,
+                'discount_eligible_subtotal' => $discountEligibleSubtotal,
                 'transaction_number' => $transactionNumber,
                 'invoice_number' => $invoiceNumber,
                 'created_at' => $now,
