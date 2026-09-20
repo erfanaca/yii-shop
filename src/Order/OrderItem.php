@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace App\Order;
 
 use DateTimeImmutable;
+use Yiisoft\ActiveRecord\ActiveRecord;
 
-final class OrderItem
+final class OrderItem extends ActiveRecord
 {
-    public function __construct(
-        private readonly int $id,
-        private readonly int $orderId,
-        private readonly ?int $productId,
-        private readonly string $productTitle,
-        private readonly int $quantity,
-        private readonly string $unitPrice,
-        private readonly DateTimeImmutable $createdAt,
-    ) {
+    public ?int $id = null;
+    public int $order_id;
+    public ?int $product_id = null;
+    public string $product_title;
+    public int $quantity;
+    public string $unit_price;
+    public DateTimeImmutable $created_at;
+
+    public function tableName(): string
+    {
+        return 'order_items';
     }
 
     public function getId(): int
@@ -26,17 +29,32 @@ final class OrderItem
 
     public function getOrderId(): int
     {
-        return $this->orderId;
+        return $this->order_id;
+    }
+
+    public function setOrderId(int $orderId): void
+    {
+        $this->order_id = $orderId;
     }
 
     public function getProductId(): ?int
     {
-        return $this->productId;
+        return $this->product_id;
+    }
+
+    public function setProductId(?int $productId): void
+    {
+        $this->product_id = $productId;
     }
 
     public function getProductTitle(): string
     {
-        return $this->productTitle;
+        return $this->product_title;
+    }
+
+    public function setProductTitle(string $productTitle): void
+    {
+        $this->product_title = $productTitle;
     }
 
     public function getQuantity(): int
@@ -44,13 +62,28 @@ final class OrderItem
         return $this->quantity;
     }
 
+    public function setQuantity(int $quantity): void
+    {
+        $this->quantity = $quantity;
+    }
+
     public function getUnitPrice(): string
     {
-        return $this->unitPrice;
+        return $this->unit_price;
+    }
+
+    public function setUnitPrice(string $unitPrice): void
+    {
+        $this->unit_price = $unitPrice;
     }
 
     public function getCreatedAt(): DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->created_at;
+    }
+
+    public function setCreatedAt(DateTimeImmutable $createdAt): void
+    {
+        $this->created_at = $createdAt;
     }
 }

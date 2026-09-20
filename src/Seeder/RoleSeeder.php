@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Seeder;
 
-use Yiisoft\Db\Connection\ConnectionInterface;
+use App\Role\Role;
 
 final class RoleSeeder
 {
-    public function __construct(
-        private ConnectionInterface $db,
-    ) {
-    }
-
     public function run(): void
     {
         $roles = [
@@ -21,19 +16,14 @@ final class RoleSeeder
             'customer',
         ];
 
-        foreach ($roles as $role) {
-            $exists = $this->db->createCommand(
-                'SELECT id FROM roles WHERE title = :title',
-                [':title' => $role],
-            )->queryScalar();
-
-            if ($exists !== false) {
+        foreach ($roles as $title) {
+            if (Role::query()->where(['title' => $title])->exists()) {
                 continue;
             }
 
-            $this->db->createCommand()
-                ->insert('roles', ['title' => $role])
-                ->execute();
+            $role = new Role();
+            $role->setTitle($title);
+            $role->save();
         }
     }
 }

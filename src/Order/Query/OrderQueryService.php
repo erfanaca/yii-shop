@@ -4,37 +4,20 @@ declare(strict_types=1);
 
 namespace App\Order\Query;
 
+use App\Order\Order;
+use App\Order\OrderItem;
 use App\Order\OrderStatus;
-use DateTimeImmutable;
-use Yiisoft\Db\Connection\ConnectionInterface;
 
 final readonly class OrderQueryService
 {
-    public function __construct(
-        private ConnectionInterface $db,
-    ) {
-    }
-
     public function getDashboardForUser(int $userId): OrderDashboard
     {
-        $rows = $this->db
-            ->createQuery()
-            ->select([
-                'id',
-                'status',
-                'total_amount',
-                'discount_code',
-                'discount_amount',
-                'transaction_number',
-                'invoice_number',
-                'created_at',
-            ])
-            ->from('orders')
+        $orders = Order::query()
             ->where(['user_id' => $userId])
             ->orderBy(['created_at' => SORT_DESC, 'id' => SORT_DESC])
             ->all();
 
-        if ($rows === []) {
+        if ($orders === []) {
             return new OrderDashboard(
                 totalOrders: 0,
                 paidOrders: 0,
@@ -46,20 +29,20 @@ final readonly class OrderQueryService
         }
 
         $orderIds = array_map(
-            static fn (array $row): int => (int) $row['id'],
-            $rows,
+            static fn (Order $order): int => $order->getId(),
+            $orders,
         );
 
         $itemsByOrderId = $this->getItemsByOrderIds($orderIds);
-        $orders = [];
+        $summaries = [];
         $paidOrders = 0;
         $cancelledOrders = 0;
         $pendingOrders = 0;
         $totalPaidAmount = 0.0;
 
-        foreach ($rows as $row) {
-            $status = OrderStatus::from((string) $row['status']);
-            $totalAmount = (string) $row['total_amount'];
+        foreach ($orders as $order) {
+            $status = $order->getStatus();
+            $totalAmount = $order->getTotalAmount();
 
             if ($status === OrderStatus::Paid) {
                 $paidOrders++;
@@ -70,58 +53,45 @@ final readonly class OrderQueryService
                 $pendingOrders++;
             }
 
-            $orderId = (int) $row['id'];
+            $orderId = $order->getId();
 
-            $orders[] = new OrderSummary(
+            $summaries[] = new OrderSummary(
                 id: $orderId,
                 status: $status,
                 totalAmount: $totalAmount,
-                discountCode: $row['discount_code'] === null ? null : (string) $row['discount_code'],
-                discountAmount: (string) $row['discount_amount'],
-                transactionNumber: (string) $row['transaction_number'],
-                invoiceNumber: (string) $row['invoice_number'],
-                createdAt: new DateTimeImmutable((string) $row['created_at']),
+                discountCode: $order->discount_code,
+                discountAmount: $order->discount_amount,
+                transactionNumber: $order->getTransactionNumber(),
+                invoiceNumber: $order->getInvoiceNumber(),
+                createdAt: $order->getCreatedAt(),
                 items: $itemsByOrderId[$orderId] ?? [],
             );
         }
 
         return new OrderDashboard(
-            totalOrders: count($orders),
+            totalOrders: count($summaries),
             paidOrders: $paidOrders,
             cancelledOrders: $cancelledOrders,
             pendingOrders: $pendingOrders,
             totalPaidAmount: number_format($totalPaidAmount, 2, '.', ''),
-            orders: $orders,
+            orders: $summaries,
         );
     }
 
-    /**
-     * @param int[] $orderIds
-     * @return array<int, OrderItemSummary[]>
-     */
     private function getItemsByOrderIds(array $orderIds): array
     {
-        $rows = $this->db
-            ->createQuery()
-            ->select([
-                'order_id',
-                'product_title',
-                'quantity',
-                'unit_price',
-            ])
-            ->from('order_items')
+        $items = OrderItem::query()
             ->where(['order_id' => $orderIds])
             ->orderBy(['id' => SORT_ASC])
             ->all();
 
         $itemsByOrderId = [];
 
-        foreach ($rows as $row) {
-            $orderId = (int) $row['order_id'];
-            $itemsByOrderId[$orderId][] = new OrderItemSummary(
-                productTitle: (string) $row['product_title'],
-                quantity: (int) $row['quantity'],
-                unitPrice: (string) $row['unit_price'],
+        foreach ($items as $item) {
+            $itemsByOrderId[$item->getOrderId()][] = new OrderItemSummary(
+                productTitle: $item->getProductTitle(),
+                quantity: $item->getQuantity(),
+                unitPrice: $item->getUnitPrice(),
             );
         }
 

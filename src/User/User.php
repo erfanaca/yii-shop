@@ -10,11 +10,11 @@ use Yiisoft\Auth\IdentityInterface;
 
 final class User extends ActiveRecord implements IdentityInterface
 {
-    public ?int $id;
+    public ?int $id = null;
     public string $email;
     public string $password_hash;
     public DateTimeImmutable $created_at;
-    public DateTimeImmutable $updated_at;
+    public ?DateTimeImmutable $updated_at = null;
 
     public function tableName(): string
     {
@@ -25,7 +25,7 @@ final class User extends ActiveRecord implements IdentityInterface
     {
         return $this->id === null
             ? null
-            : (string)$this->id;
+            : (string) $this->id;
     }
 
     public function getEmail(): string

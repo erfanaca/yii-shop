@@ -9,18 +9,17 @@ use Yiisoft\ActiveRecord\ActiveRecord;
 
 final class ProductImage extends ActiveRecord
 {
-    public int $id;
+    public ?int $id = null;
     public int $product_id;
     public string $path;
-    public int $sortOrder;
-    public DateTimeImmutable $createdAt;
-    public ?DateTimeImmutable $updatedAt;
+    public int $sort_order = 0;
+    public DateTimeImmutable $created_at;
+    public ?DateTimeImmutable $updated_at = null;
 
     public function tableName(): string
     {
         return 'product_images';
     }
-
 
     public function getId(): int
     {
@@ -49,21 +48,21 @@ final class ProductImage extends ActiveRecord
 
     public function getSortOrder(): int
     {
-        return $this->sortOrder;
+        return $this->sort_order;
     }
 
     public function setSortOrder(int $sortOrder): void
     {
-        $this->sortOrder = $sortOrder;
+        $this->sort_order = $sortOrder;
     }
 
     public function getCreatedAt(): DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
     public function getUpdatedAt(): ?DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 }

@@ -6,14 +6,12 @@ namespace App\Order;
 
 use DateTimeImmutable;
 use RuntimeException;
-use Yiisoft\Db\Connection\ConnectionInterface;
 
 final readonly class OrderRepository
 {
     private const MAX_REFERENCE_GENERATION_ATTEMPTS = 20;
 
     public function __construct(
-        private ConnectionInterface $db,
         private OrderReferenceGenerator $referenceGenerator,
     ) {
     }
@@ -28,39 +26,25 @@ final readonly class OrderRepository
         ?string $discountValue = null,
         ?string $discountEligibleSubtotal = null,
     ): Order {
-        $now = new DateTimeImmutable();
         $transactionNumber = $this->generateUniqueReference();
         $invoiceNumber = $this->generateUniqueReference([$transactionNumber]);
 
-        $this->db
-            ->createCommand()
-            ->insert('orders', [
-                'user_id' => $userId,
-                'status' => OrderStatus::Pending->value,
-                'total_amount' => $totalAmount,
-                'subtotal_amount' => $subtotalAmount,
-                'discount_amount' => $discountAmount,
-                'discount_code' => $discountCode,
-                'discount_type' => $discountType,
-                'discount_value' => $discountValue,
-                'discount_eligible_subtotal' => $discountEligibleSubtotal,
-                'transaction_number' => $transactionNumber,
-                'invoice_number' => $invoiceNumber,
-                'created_at' => $now,
-                'updated_at' => null,
-            ])
-            ->execute();
+        $order = new Order();
+        $order->setUserId($userId);
+        $order->setStatus(OrderStatus::Pending);
+        $order->setTotalAmount($totalAmount);
+        $order->setSubtotalAmount($subtotalAmount);
+        $order->setDiscountAmount($discountAmount);
+        $order->setDiscountCode($discountCode);
+        $order->setDiscountType($discountType);
+        $order->setDiscountValue($discountValue);
+        $order->setDiscountEligibleSubtotal($discountEligibleSubtotal);
+        $order->setTransactionNumber($transactionNumber);
+        $order->setInvoiceNumber($invoiceNumber);
+        $order->setCreatedAt(new DateTimeImmutable());
+        $order->save();
 
-        return new Order(
-            id: (int) $this->db->getLastInsertId(),
-            userId: $userId,
-            status: OrderStatus::Pending,
-            totalAmount: $totalAmount,
-            transactionNumber: $transactionNumber,
-            invoiceNumber: $invoiceNumber,
-            createdAt: $now,
-            updatedAt: null,
-        );
+        return $order;
     }
 
     public function addItem(
@@ -70,50 +54,25 @@ final readonly class OrderRepository
         int $quantity,
         string $unitPrice,
     ): void {
-        $this->db
-            ->createCommand()
-            ->insert('order_items', [
-                'order_id' => $orderId,
-                'product_id' => $productId,
-                'product_title' => $productTitle,
-                'quantity' => $quantity,
-                'unit_price' => $unitPrice,
-                'created_at' => new DateTimeImmutable(),
-            ])
-            ->execute();
+        $item = new OrderItem();
+        $item->setOrderId($orderId);
+        $item->setProductId($productId);
+        $item->setProductTitle($productTitle);
+        $item->setQuantity($quantity);
+        $item->setUnitPrice($unitPrice);
+        $item->setCreatedAt(new DateTimeImmutable());
+        $item->save();
     }
 
     public function changeStatus(Order $order, OrderStatus $status): Order
     {
-        $updatedAt = new DateTimeImmutable();
+        $order->setStatus($status);
+        $order->setUpdatedAt(new DateTimeImmutable());
+        $order->save();
 
-        $this->db
-            ->createCommand()
-            ->update(
-                'orders',
-                [
-                    'status' => $status->value,
-                    'updated_at' => $updatedAt,
-                ],
-                ['id' => $order->getId()],
-            )
-            ->execute();
-
-        return new Order(
-            id: $order->getId(),
-            userId: $order->getUserId(),
-            status: $status,
-            totalAmount: $order->getTotalAmount(),
-            transactionNumber: $order->getTransactionNumber(),
-            invoiceNumber: $order->getInvoiceNumber(),
-            createdAt: $order->getCreatedAt(),
-            updatedAt: $updatedAt,
-        );
+        return $order;
     }
 
-    /**
-     * @param string[] $excludedReferences
-     */
     private function generateUniqueReference(array $excludedReferences = []): string
     {
         for ($attempt = 0; $attempt < self::MAX_REFERENCE_GENERATION_ATTEMPTS; $attempt++) {
@@ -123,19 +82,15 @@ final readonly class OrderRepository
                 continue;
             }
 
-            $existingOrder = $this->db
-                ->createQuery()
-                ->select(['id'])
-                ->from('orders')
+            $exists = Order::query()
                 ->where([
                     'or',
                     ['transaction_number' => $reference],
                     ['invoice_number' => $reference],
                 ])
-                ->limit(1)
-                ->one();
+                ->exists();
 
-            if ($existingOrder === null || $existingOrder === false) {
+            if (!$exists) {
                 return $reference;
             }
         }

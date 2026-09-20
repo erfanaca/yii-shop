@@ -17,7 +17,7 @@ final class Product extends ActiveRecord
     public ?int $quantity = null;
     public ?string $price = null;
     public DateTimeImmutable $created_at;
-    public DateTimeImmutable $updated_at;
+    public ?DateTimeImmutable $updated_at = null;
 
     public function tableName(): string
     {
@@ -27,7 +27,10 @@ final class Product extends ActiveRecord
     public function relationQuery(string $name): ActiveQueryInterface
     {
         return match ($name) {
-            'categories' => $this->hasMany(Category::class, ['product_id' => 'id']),
+            'productCategories' => $this->hasMany(ProductCategory::class, ['product_id' => 'id']),
+            'categories' => $this->hasMany(Category::class, ['id' => 'category_id'])->via('productCategories'),
+            'images' => $this->hasMany(ProductImage::class, ['product_id' => 'id']),
+            default => parent::relationQuery($name),
         };
     }
 

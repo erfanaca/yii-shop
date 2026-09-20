@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace App\Seeder;
 
-use Yiisoft\Db\Connection\ConnectionInterface;
+use App\Permission\Permission;
 
 final class PermissionSeeder
 {
-    public function __construct(
-        private ConnectionInterface $db,
-    ) {
-    }
-
     public function run(): void
     {
         $resources = [
@@ -36,17 +31,14 @@ final class PermissionSeeder
 
         $permissions[] = 'user.roles';
 
-        foreach ($permissions as $permission) {
-            $exists = $this->db->createCommand(
-                'SELECT id FROM permissions WHERE title = :title',
-                [':title' => $permission],
-            )->queryScalar();
-
-            if ($exists === false) {
-                $this->db->createCommand()
-                    ->insert('permissions', ['title' => $permission])
-                    ->execute();
+        foreach ($permissions as $title) {
+            if (Permission::query()->where(['title' => $title])->exists()) {
+                continue;
             }
+
+            $permission = new Permission();
+            $permission->setTitle($title);
+            $permission->save();
         }
     }
 }

@@ -4,18 +4,12 @@ declare(strict_types=1);
 
 namespace App\Role;
 
-use App\Permission\Permission;
-use Yiisoft\Db\Connection\ConnectionInterface;
-
 final class RoleRepository
 {
-    public function __construct(private readonly ConnectionInterface $db)
-    {
-    }
-
     public function findAll(): array
     {
         return Role::query()
+            ->orderBy(['id' => SORT_ASC])
             ->all();
     }
 
@@ -26,19 +20,23 @@ final class RoleRepository
             ->one();
     }
 
+    public function findByTitle(string $title): ?Role
+    {
+        return Role::query()
+            ->where(['title' => $title])
+            ->one();
+    }
+
     public function create(string $title): void
     {
         $role = new Role();
-
         $role->setTitle($title);
-
         $role->save();
     }
 
     public function update(Role $role, string $title): void
     {
         $role->setTitle($title);
-
         $role->save();
     }
 
@@ -49,14 +47,32 @@ final class RoleRepository
 
     public function permissionIds(int $roleId): array
     {
-        return array_map(fn($r) => (int)$r['permission_id'], $this->db->createQuery()->select('permission_id')->from('role_permissions')->where(['role_id' => $roleId])->all());
+        $rows = RolePermission::query()
+            ->where(['role_id' => $roleId])
+            ->orderBy(['permission_id' => SORT_ASC])
+            ->all();
+
+        return array_map(
+            static fn (RolePermission $row): int => $row->permission_id,
+            $rows,
+        );
     }
 
     public function syncPermissions(int $roleId, array $ids): void
     {
-        $this->db->createCommand()->delete('role_permissions', ['role_id' => $roleId])->execute();
-        foreach ($ids as $id) {
-            $this->db->createCommand()->insert('role_permissions', ['role_id' => $roleId, 'permission_id' => $id])->execute();
+        $rows = RolePermission::query()
+            ->where(['role_id' => $roleId])
+            ->all();
+
+        foreach ($rows as $row) {
+            $row->delete();
+        }
+
+        foreach (array_values(array_unique(array_map('intval', $ids))) as $permissionId) {
+            $rolePermission = new RolePermission();
+            $rolePermission->setRoleId($roleId);
+            $rolePermission->setPermissionId($permissionId);
+            $rolePermission->save();
         }
     }
 }

@@ -1,14 +1,19 @@
 <?php
 
-declare (strict_types=1);
+declare(strict_types=1);
 
 namespace App\Permission;
-final class Permission
+
+use Yiisoft\ActiveRecord\ActiveRecord;
+
+final class Permission extends ActiveRecord
 {
-    public function __construct(
-        private readonly int $id,
-        private readonly string $title
-    ) {
+    public ?int $id = null;
+    public string $title;
+
+    public function tableName(): string
+    {
+        return 'permissions';
     }
 
     public function getId(): int
@@ -19,5 +24,10 @@ final class Permission
     public function getTitle(): string
     {
         return $this->title;
+    }
+
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
     }
 }

@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Category;
+namespace App\Cart;
 
 use DateTimeImmutable;
 use Yiisoft\ActiveRecord\ActiveRecord;
 
-final class Category extends ActiveRecord
+final class Cart extends ActiveRecord
 {
     public ?int $id = null;
-    public string $title;
+    public int $user_id;
+    public string $status = 'ACTIVE';
+    public ?int $discount_code_id = null;
     public DateTimeImmutable $created_at;
     public ?DateTimeImmutable $updated_at = null;
 
     public function tableName(): string
     {
-        return 'categories';
+        return 'carts';
     }
 
     public function getId(): int
@@ -24,29 +26,24 @@ final class Category extends ActiveRecord
         return $this->id;
     }
 
-    public function getTitle(): string
+    public function setUserId(int $userId): void
     {
-        return $this->title;
+        $this->user_id = $userId;
     }
 
-    public function setTitle(string $title): void
+    public function setStatus(string $status): void
     {
-        $this->title = $title;
+        $this->status = $status;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
+    public function setDiscountCodeId(?int $discountCodeId): void
     {
-        return $this->created_at;
+        $this->discount_code_id = $discountCodeId;
     }
 
     public function setCreatedAt(DateTimeImmutable $createdAt): void
     {
         $this->created_at = $createdAt;
-    }
-
-    public function getUpdatedAt(): ?DateTimeImmutable
-    {
-        return $this->updated_at;
     }
 
     public function setUpdatedAt(?DateTimeImmutable $updatedAt): void

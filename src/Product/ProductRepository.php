@@ -4,24 +4,13 @@ declare(strict_types=1);
 
 namespace App\Product;
 
-use Yiisoft\Db\Connection\ConnectionInterface;
-use Yiisoft\Db\Exception\Exception;
-use Yiisoft\Db\Exception\InvalidConfigException;
-
 final class ProductRepository
 {
-    public function __construct(
-        private readonly ConnectionInterface $db,
-    )
-    {
-    }
-
-    /**
-     * @return Product[]
-     */
     public function findAll(): array
     {
-        return Product::query()->all();
+        return Product::query()
+            ->orderBy(['id' => SORT_ASC])
+            ->all();
     }
 
     public function findById(int $id): ?Product
@@ -31,39 +20,30 @@ final class ProductRepository
             ->one();
     }
 
-    /**
-     * @param int $productId
-     * @return array
-     * @throws Exception
-     * @throws InvalidConfigException
-     * @throws \Throwable
-     */
     public function findCategoryIds(int $productId): array
     {
         $rows = ProductCategory::query()
             ->where(['product_id' => $productId])
+            ->orderBy(['category_id' => SORT_ASC])
             ->all();
 
         return array_map(
-            static fn(ProductCategory $row): int => $row->category_id,
+            static fn (ProductCategory $row): int => $row->category_id,
             $rows,
         );
     }
 
     public function create(
-        string  $title,
+        string $title,
         ?string $description,
-        int     $quantity,
-        string  $price,
-    ): Product
-    {
+        int $quantity,
+        string $price,
+    ): Product {
         $product = new Product();
-
         $product->setTitle($title);
         $product->setDescription($description);
         $product->setQuantity($quantity);
         $product->setPrice($price);
-
         $product->save();
 
         return $product;
@@ -71,12 +51,11 @@ final class ProductRepository
 
     public function update(
         Product $product,
-        string  $title,
+        string $title,
         ?string $description,
-        int     $quantity,
-        string  $price,
-    ): Product
-    {
+        int $quantity,
+        string $price,
+    ): Product {
         $product->setTitle($title);
         $product->setDescription($description);
         $product->setQuantity($quantity);
@@ -92,9 +71,16 @@ final class ProductRepository
             return false;
         }
 
-        $affectedRows = $this->findById($productId)->update(['quantity' => $quantity - 1]);
+        $product = $this->findById($productId);
 
-        return $affectedRows === 1;
+        if ($product === null || $product->getQuantity() < $quantity) {
+            return false;
+        }
+
+        $product->setQuantity($product->getQuantity() - $quantity);
+        $product->save();
+
+        return true;
     }
 
     public function delete(Product $product): void
@@ -112,9 +98,8 @@ final class ProductRepository
             $row->delete();
         }
 
-        foreach ($categoryIds as $categoryId) {
+        foreach (array_values(array_unique(array_map('intval', $categoryIds))) as $categoryId) {
             $productCategory = new ProductCategory();
-
             $productCategory->setProductId($productId);
             $productCategory->setCategoryId($categoryId);
             $productCategory->save();
@@ -124,28 +109,34 @@ final class ProductRepository
     public function addImage(int $productId, string $path, int $sortOrder): void
     {
         $productImage = new ProductImage();
-
         $productImage->setProductId($productId);
         $productImage->setPath($path);
         $productImage->setSortOrder($sortOrder);
-
         $productImage->save();
     }
 
+    /** @return ProductImage[] */
     public function findImages(int $productId): array
     {
         return ProductImage::query()
             ->where(['product_id' => $productId])
-            ->orderBy('sort_order')
+            ->orderBy(['sort_order' => SORT_ASC, 'id' => SORT_ASC])
             ->all();
     }
 
     public function deleteImage(int $imageId): ?string
     {
-        $productImage = ProductImage::query()->where(['id' => $imageId])->one();
-        $productImagePath = $productImage->getPath();
+        $productImage = ProductImage::query()
+            ->where(['id' => $imageId])
+            ->one();
+
+        if ($productImage === null) {
+            return null;
+        }
+
+        $path = $productImage->getPath();
         $productImage->delete();
 
-        return $productImagePath;
+        return $path;
     }
 }

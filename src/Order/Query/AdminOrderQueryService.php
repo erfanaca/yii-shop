@@ -4,130 +4,117 @@ declare(strict_types=1);
 
 namespace App\Order\Query;
 
-use App\Order\OrderStatus;
-use DateTimeImmutable;
-use Yiisoft\Db\Connection\ConnectionInterface;
+use App\Order\Order;
+use App\Order\OrderItem;
+use App\User\User;
 
 final readonly class AdminOrderQueryService
 {
-    public function __construct(
-        private ConnectionInterface $db,
-    ) {
-    }
-
-    /**
-     * @return AdminOrderSummary[]
-     */
     public function findAll(): array
     {
-        $rows = $this->db
-            ->createQuery()
-            ->select([
-                'orders.id',
-                'orders.user_id',
-                'users.email AS user_email',
-                'orders.status',
-                'orders.total_amount',
-                'orders.discount_code',
-                'orders.discount_amount',
-                'orders.transaction_number',
-                'orders.invoice_number',
-                'orders.created_at',
-                'orders.updated_at',
-            ])
-            ->from('orders')
-            ->innerJoin('users', 'users.id = orders.user_id')
-            ->orderBy(['orders.created_at' => SORT_DESC, 'orders.id' => SORT_DESC])
+        $orders = Order::query()
+            ->orderBy(['created_at' => SORT_DESC, 'id' => SORT_DESC])
             ->all();
 
-        return array_map(
-            static fn (array $row): AdminOrderSummary => new AdminOrderSummary(
-                id: (int) $row['id'],
-                userId: (int) $row['user_id'],
-                userEmail: (string) $row['user_email'],
-                status: OrderStatus::from((string) $row['status']),
-                totalAmount: (string) $row['total_amount'],
-                discountCode: $row['discount_code'] === null ? null : (string) $row['discount_code'],
-                discountAmount: (string) $row['discount_amount'],
-                transactionNumber: (string) $row['transaction_number'],
-                invoiceNumber: (string) $row['invoice_number'],
-                createdAt: new DateTimeImmutable((string) $row['created_at']),
-                updatedAt: $row['updated_at'] === null
-                    ? null
-                    : new DateTimeImmutable((string) $row['updated_at']),
-            ),
-            $rows,
-        );
+        if ($orders === []) {
+            return [];
+        }
+
+        $usersById = $this->findUsersByIds(array_map(
+            static fn (Order $order): int => $order->getUserId(),
+            $orders,
+        ));
+
+        $result = [];
+        foreach ($orders as $order) {
+            $user = $usersById[$order->getUserId()] ?? null;
+
+            if ($user === null) {
+                continue;
+            }
+
+            $result[] = new AdminOrderSummary(
+                id: $order->getId(),
+                userId: $order->getUserId(),
+                userEmail: $user->getEmail(),
+                status: $order->getStatus(),
+                totalAmount: $order->getTotalAmount(),
+                discountCode: $order->discount_code,
+                discountAmount: $order->discount_amount,
+                transactionNumber: $order->getTransactionNumber(),
+                invoiceNumber: $order->getInvoiceNumber(),
+                createdAt: $order->getCreatedAt(),
+                updatedAt: $order->getUpdatedAt(),
+            );
+        }
+
+        return $result;
     }
 
     public function findById(int $id): ?AdminOrderDetails
     {
-        $row = $this->db
-            ->createQuery()
-            ->select([
-                'orders.id',
-                'orders.user_id',
-                'users.email AS user_email',
-                'orders.status',
-                'orders.total_amount',
-                'orders.discount_code',
-                'orders.discount_amount',
-                'orders.transaction_number',
-                'orders.invoice_number',
-                'orders.created_at',
-                'orders.updated_at',
-            ])
-            ->from('orders')
-            ->innerJoin('users', 'users.id = orders.user_id')
-            ->where(['orders.id' => $id])
+        $order = Order::query()
+            ->where(['id' => $id])
             ->one();
 
-        if ($row === null || $row === false) {
+        if ($order === null) {
+            return null;
+        }
+
+        $user = User::query()
+            ->where(['id' => $order->getUserId()])
+            ->one();
+
+        if ($user === null) {
             return null;
         }
 
         return new AdminOrderDetails(
-            id: (int) $row['id'],
-            userId: (int) $row['user_id'],
-            userEmail: (string) $row['user_email'],
-            status: OrderStatus::from((string) $row['status']),
-            totalAmount: (string) $row['total_amount'],
-            discountCode: $row['discount_code'] === null ? null : (string) $row['discount_code'],
-            discountAmount: (string) $row['discount_amount'],
-            transactionNumber: (string) $row['transaction_number'],
-            invoiceNumber: (string) $row['invoice_number'],
-            createdAt: new DateTimeImmutable((string) $row['created_at']),
-            updatedAt: $row['updated_at'] === null
-                ? null
-                : new DateTimeImmutable((string) $row['updated_at']),
-            items: $this->getItems($id),
+            id: $order->getId(),
+            userId: $order->getUserId(),
+            userEmail: $user->getEmail(),
+            status: $order->getStatus(),
+            totalAmount: $order->getTotalAmount(),
+            discountCode: $order->discount_code,
+            discountAmount: $order->discount_amount,
+            transactionNumber: $order->getTransactionNumber(),
+            invoiceNumber: $order->getInvoiceNumber(),
+            createdAt: $order->getCreatedAt(),
+            updatedAt: $order->getUpdatedAt(),
+            items: $this->getItems($order->getId()),
         );
     }
 
-    /**
-     * @return OrderItemSummary[]
-     */
     private function getItems(int $orderId): array
     {
-        $rows = $this->db
-            ->createQuery()
-            ->select([
-                'product_title',
-                'quantity',
-                'unit_price',
-            ])
-            ->from('order_items')
+        $items = OrderItem::query()
             ->where(['order_id' => $orderId])
             ->orderBy(['id' => SORT_ASC])
             ->all();
 
         return array_map(
-            static fn (array $row): OrderItemSummary => new OrderItemSummary(
-                productTitle: (string) $row['product_title'],
-                quantity: (int) $row['quantity'],
-                unitPrice: (string) $row['unit_price'],
+            static fn (OrderItem $item): OrderItemSummary => new OrderItemSummary(
+                productTitle: $item->getProductTitle(),
+                quantity: $item->getQuantity(),
+                unitPrice: $item->getUnitPrice(),
             ),
-            $rows,
+            $items,
         );
+    }
+
+
+    private function findUsersByIds(array $userIds): array
+    {
+        $userIds = array_values(array_unique($userIds));
+        $users = User::query()
+            ->where(['id' => $userIds])
+            ->all();
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[(int) $user->getId()] = $user;
+        }
+
+        return $result;
     }
 }

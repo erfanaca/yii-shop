@@ -4,336 +4,251 @@ declare(strict_types=1);
 
 namespace App\Cart;
 
+use App\Product\Product;
 use DateTimeImmutable;
-use Yiisoft\Db\Connection\ConnectionInterface;
 
 final readonly class CartService
 {
-    public function __construct(
-        private ConnectionInterface $db,
-    ) {
-    }
-
     public function getProductQuantity(int $userId, int $productId): int
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             return 0;
         }
 
-        $item = $this->db
-            ->createQuery()
-            ->select(['quantity'])
-            ->from('cart_items')
+        $item = CartItem::query()
             ->where([
-                'cart_id' => $cartId,
+                'cart_id' => $cart->getId(),
                 'product_id' => $productId,
             ])
             ->one();
 
-        if ($item === null || $item === false) {
-            return 0;
-        }
-
-        return (int) $item['quantity'];
+        return $item?->quantity ?? 0;
     }
 
     public function addProduct(int $userId, int $productId, string $unitPrice): void
     {
         $availableQuantity = $this->getAvailableProductQuantity($productId);
-
         $currentQuantity = $this->getProductQuantity($userId, $productId);
 
         if ($currentQuantity >= $availableQuantity) {
             return;
         }
 
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
         $now = new DateTimeImmutable();
 
-        if ($cartId === null) {
-            $this->db
-                ->createCommand()
-                ->insert('carts', [
-                    'user_id' => $userId,
-                    'status' => 'ACTIVE',
-                    'created_at' => $now,
-                    'updated_at' => null,
-                ])
-                ->execute();
-
-            $cartId = (int) $this->db->getLastInsertId();
+        if ($cart === null) {
+            $cart = new Cart();
+            $cart->setUserId($userId);
+            $cart->setStatus('ACTIVE');
+            $cart->setCreatedAt($now);
+            $cart->save();
         }
 
-        $item = $this->db
-            ->createQuery()
-            ->from('cart_items')
+        $item = CartItem::query()
             ->where([
-                'cart_id' => $cartId,
+                'cart_id' => $cart->getId(),
                 'product_id' => $productId,
             ])
             ->one();
 
-        if ($item !== null && $item !== false) {
-            $this->db
-                ->createCommand()
-                ->update(
-                    'cart_items',
-                    [
-                        'quantity' => ((int) $item['quantity']) + 1,
-                        'updated_at' => $now,
-                    ],
-                    ['id' => $item['id']],
-                )
-                ->execute();
-
-            $this->touchCart($cartId, $now);
+        if ($item !== null) {
+            $item->setQuantity($item->quantity + 1);
+            $item->setUpdatedAt($now);
+            $item->save();
+            $this->touchCart($cart, $now);
             return;
         }
 
-        $this->db
-            ->createCommand()
-            ->insert('cart_items', [
-                'cart_id' => $cartId,
-                'product_id' => $productId,
-                'quantity' => 1,
-                'unit_price' => $unitPrice,
-                'created_at' => $now,
-                'updated_at' => null,
-            ])
-            ->execute();
+        $item = new CartItem();
+        $item->setCartId($cart->getId());
+        $item->setProductId($productId);
+        $item->setQuantity(1);
+        $item->setUnitPrice($unitPrice);
+        $item->setCreatedAt($now);
+        $item->save();
 
-        $this->touchCart($cartId, $now);
+        $this->touchCart($cart, $now);
     }
 
     public function decreaseProduct(int $userId, int $productId): void
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             return;
         }
 
-        $item = $this->db
-            ->createQuery()
-            ->from('cart_items')
+        $item = CartItem::query()
             ->where([
-                'cart_id' => $cartId,
+                'cart_id' => $cart->getId(),
                 'product_id' => $productId,
             ])
             ->one();
 
-        if ($item === null || $item === false) {
+        if ($item === null) {
             return;
         }
 
         $now = new DateTimeImmutable();
-        $quantity = (int) $item['quantity'];
 
-        if ($quantity <= 1) {
-            $this->db
-                ->createCommand()
-                ->delete('cart_items', ['id' => $item['id']])
-                ->execute();
-
-            $this->touchCart($cartId, $now);
+        if ($item->quantity <= 1) {
+            $item->delete();
+            $this->touchCart($cart, $now);
             return;
         }
 
-        $this->db
-            ->createCommand()
-            ->update(
-                'cart_items',
-                [
-                    'quantity' => $quantity - 1,
-                    'updated_at' => $now,
-                ],
-                ['id' => $item['id']],
-            )
-            ->execute();
+        $item->setQuantity($item->quantity - 1);
+        $item->setUpdatedAt($now);
+        $item->save();
 
-        $this->touchCart($cartId, $now);
+        $this->touchCart($cart, $now);
     }
 
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
     public function getItems(int $userId): array
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             return [];
         }
 
-        return $this->db
-            ->createQuery()
-            ->select([
-                'cart_items.id',
-                'cart_items.product_id',
-                'cart_items.quantity',
-                'cart_items.unit_price',
-                'products.title',
-                'products.quantity AS stock',
-            ])
-            ->from('cart_items')
-            ->innerJoin('products', 'products.id = cart_items.product_id')
-            ->where(['cart_items.cart_id' => $cartId])
+        $items = CartItem::query()
+            ->where(['cart_id' => $cart->getId()])
+            ->orderBy(['id' => SORT_ASC])
             ->all();
+
+        if ($items === []) {
+            return [];
+        }
+
+        $productIds = array_values(array_unique(array_map(
+            static fn (CartItem $item): int => $item->product_id,
+            $items,
+        )));
+
+        $products = Product::query()
+            ->where(['id' => $productIds])
+            ->all();
+
+        $productsById = [];
+        foreach ($products as $product) {
+            $productsById[$product->getId()] = $product;
+        }
+
+        $result = [];
+        foreach ($items as $item) {
+            $product = $productsById[$item->product_id] ?? null;
+
+            if ($product === null) {
+                continue;
+            }
+
+            $result[] = [
+                'id' => $item->id,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'unit_price' => $item->unit_price,
+                'title' => $product->getTitle(),
+                'stock' => $product->getQuantity(),
+            ];
+        }
+
+        return $result;
     }
 
     public function removeProduct(int $userId, int $productId): void
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             return;
         }
 
-        $this->db
-            ->createCommand()
-            ->delete('cart_items', [
-                'cart_id' => $cartId,
+        $items = CartItem::query()
+            ->where([
+                'cart_id' => $cart->getId(),
                 'product_id' => $productId,
             ])
-            ->execute();
+            ->all();
 
-        $this->touchCart($cartId, new DateTimeImmutable());
+        foreach ($items as $item) {
+            $item->delete();
+        }
+
+        $this->touchCart($cart, new DateTimeImmutable());
     }
 
     public function getAppliedDiscountCodeId(int $userId): ?int
     {
-        $cartId = $this->findActiveCartId($userId);
-
-        if ($cartId === null) {
-            return null;
-        }
-
-        $cart = $this->db
-            ->createQuery()
-            ->select(['discount_code_id'])
-            ->from('carts')
-            ->where(['id' => $cartId])
-            ->one();
-
-        if ($cart === null || $cart === false || $cart['discount_code_id'] === null) {
-            return null;
-        }
-
-        return (int) $cart['discount_code_id'];
+        return $this->findActiveCart($userId)?->discount_code_id;
     }
 
     public function applyDiscountCode(int $userId, int $discountCodeId): void
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             throw new \RuntimeException('Active cart not found.');
         }
 
-        $now = new DateTimeImmutable();
-
-        $this->db
-            ->createCommand()
-            ->update(
-                'carts',
-                [
-                    'discount_code_id' => $discountCodeId,
-                    'updated_at' => $now,
-                ],
-                ['id' => $cartId],
-            )
-            ->execute();
+        $cart->setDiscountCodeId($discountCodeId);
+        $cart->setUpdatedAt(new DateTimeImmutable());
+        $cart->save();
     }
 
     public function removeDiscountCode(int $userId): void
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             return;
         }
 
-        $this->db
-            ->createCommand()
-            ->update(
-                'carts',
-                [
-                    'discount_code_id' => null,
-                    'updated_at' => new DateTimeImmutable(),
-                ],
-                ['id' => $cartId],
-            )
-            ->execute();
+        $cart->setDiscountCodeId(null);
+        $cart->setUpdatedAt(new DateTimeImmutable());
+        $cart->save();
     }
 
     public function complete(int $userId): void
     {
-        $cartId = $this->findActiveCartId($userId);
+        $cart = $this->findActiveCart($userId);
 
-        if ($cartId === null) {
+        if ($cart === null) {
             throw new \RuntimeException('Active cart not found.');
         }
 
-        $this->db
-            ->createCommand()
-            ->update(
-                'carts',
-                [
-                    'status' => 'COMPLETED',
-                    'updated_at' => new DateTimeImmutable(),
-                ],
-                ['id' => $cartId],
-            )
-            ->execute();
+        $cart->setStatus('COMPLETED');
+        $cart->setUpdatedAt(new DateTimeImmutable());
+        $cart->save();
     }
 
     private function getAvailableProductQuantity(int $productId): int
     {
-        $product = $this->db
-            ->createQuery()
-            ->select(['quantity'])
-            ->from('products')
+        $product = Product::query()
             ->where(['id' => $productId])
             ->one();
 
-        if ($product === null || $product === false) {
-            return 0;
-        }
-
-        return (int) $product['quantity'];
+        return $product?->getQuantity() ?? 0;
     }
 
-    private function findActiveCartId(int $userId): ?int
+    private function findActiveCart(int $userId): ?Cart
     {
-        $cart = $this->db
-            ->createQuery()
-            ->select(['id'])
-            ->from('carts')
+        return Cart::query()
             ->where([
                 'user_id' => $userId,
                 'status' => 'ACTIVE',
             ])
+            ->orderBy(['id' => SORT_DESC])
             ->one();
-
-        if ($cart === null || $cart === false) {
-            return null;
-        }
-
-        return (int) $cart['id'];
     }
 
-    private function touchCart(int $cartId, DateTimeImmutable $now): void
+    private function touchCart(Cart $cart, DateTimeImmutable $now): void
     {
-        $this->db
-            ->createCommand()
-            ->update(
-                'carts',
-                ['updated_at' => $now],
-                ['id' => $cartId],
-            )
-            ->execute();
+        $cart->setUpdatedAt($now);
+        $cart->save();
     }
 }
