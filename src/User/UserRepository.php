@@ -22,17 +22,12 @@ final class UserRepository implements IdentityRepositoryInterface
         string $email,
         string $passwordHash,
     ): void {
-        $now = new DateTimeImmutable();
+        $user = new User();
 
-        $this->db
-            ->createCommand()
-            ->insert('users', [
-                'email' => $email,
-                'password_hash' => $passwordHash,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ])
-            ->execute();
+        $user->setEmail($email);
+        $user->setPasswordHash($passwordHash);
+
+        $user->save();
     }
 
     /**
@@ -42,34 +37,12 @@ final class UserRepository implements IdentityRepositoryInterface
      */
     public function findByEmail(string $email): ?User
     {
-        $row = $this->db
-            ->createQuery()
-            ->from('users')
-            ->where(['email' => $email])
-            ->limit(1)
-            ->one();
-
-        if ($row === null || $row === false) {
-            return null;
-        }
-
-        return $this->createUserFromRow($row);
+        return User::query()->where(['email' => $email])->one();
     }
 
     public function findIdentity(string $id): ?IdentityInterface
     {
-        $row = $this->db
-            ->createQuery()
-            ->from('users')
-            ->where(['id' => $id])
-            ->limit(1)
-            ->one();
-
-        if ($row === null || $row === false) {
-            return null;
-        }
-
-        return $this->createUserFromRow($row);
+        return User::query()->where(['id' => $id])->one();
     }
 
     /**
@@ -80,14 +53,5 @@ final class UserRepository implements IdentityRepositoryInterface
     public function existsByEmail(string $email): bool
     {
         return $this->findByEmail($email) !== null;
-    }
-
-    private function createUserFromRow(array $row): User
-    {
-        return new User(
-            id: (int) $row['id'],
-            email: (string) $row['email'],
-            passwordHash: (string) $row['password_hash'],
-        );
     }
 }

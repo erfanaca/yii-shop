@@ -5,18 +5,22 @@ declare(strict_types=1);
 namespace App\Product;
 
 use DateTimeImmutable;
+use Yiisoft\ActiveRecord\ActiveRecord;
 
-final class ProductImage
+final class ProductImage extends ActiveRecord
 {
-    public function __construct(
-        private readonly int $id,
-        private readonly int $productId,
-        private readonly string $path,
-        private readonly int $sortOrder,
-        private readonly DateTimeImmutable $createdAt,
-        private readonly ?DateTimeImmutable $updatedAt,
-    ) {
+    public int $id;
+    public int $product_id;
+    public string $path;
+    public int $sortOrder;
+    public DateTimeImmutable $createdAt;
+    public ?DateTimeImmutable $updatedAt;
+
+    public function tableName(): string
+    {
+        return 'product_images';
     }
+
 
     public function getId(): int
     {
@@ -25,7 +29,12 @@ final class ProductImage
 
     public function getProductId(): int
     {
-        return $this->productId;
+        return $this->product_id;
+    }
+
+    public function setProductId(int $productId): void
+    {
+        $this->product_id = $productId;
     }
 
     public function getPath(): string
@@ -33,9 +42,19 @@ final class ProductImage
         return $this->path;
     }
 
+    public function setPath(string $path): void
+    {
+        $this->path = $path;
+    }
+
     public function getSortOrder(): int
     {
         return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
     }
 
     public function getCreatedAt(): DateTimeImmutable

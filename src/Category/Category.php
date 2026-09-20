@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Category;
 
 use DateTimeImmutable;
+use Yiisoft\ActiveRecord\ActiveRecord;
 
-final class Category
+final class Category extends ActiveRecord
 {
     public function __construct(
         private readonly int $id,
