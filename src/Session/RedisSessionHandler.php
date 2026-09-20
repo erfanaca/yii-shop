@@ -13,7 +13,7 @@ final class RedisSessionHandler implements SessionHandlerInterface
 
     public function __construct(
         private readonly string $prefix = 'shop:session:',
-        private readonly int $ttl = 3600,
+        private readonly int $ttl = 604800,
     ) {
         $this->redis = new Redis();
 

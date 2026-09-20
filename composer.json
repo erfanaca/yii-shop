@@ -35,6 +35,7 @@
     "require": {
         "php": "8.2 - 8.5",
         "ext-filter": "*",
+        "ext-redis": "*",
         "httpsoft/http-message": "^1.1.6",
         "predis/predis": "^3.6",
         "psr/container": "^2.0.2",
@@ -71,8 +72,7 @@
         "yiisoft/yii-http": "^1.1.1",
         "yiisoft/yii-runner-console": "^2.2.1",
         "yiisoft/yii-runner-http": "^3.2.1",
-        "yiisoft/yii-view-renderer": "^7.4.1",
-        "ext-redis": "*"
+        "yiisoft/yii-view-renderer": "^7.4.1"
     },
     "require-dev": {
         "vlucas/phpdotenv": "^5.6",
