@@ -10,9 +10,7 @@ use Yiisoft\Db\Connection\ConnectionInterface;
 
 final readonly class DiscountCodeRepository
 {
-    public function __construct(private ConnectionInterface $db)
-    {
-    }
+    public function __construct(private ConnectionInterface $db) {}
 
     /** @return DiscountCode[] */
     public function findAll(): array
@@ -168,7 +166,7 @@ final readonly class DiscountCodeRepository
             ->orderBy(['user_id' => SORT_ASC])
             ->all();
 
-        return array_map(static fn (array $row): int => (int) $row['user_id'], $rows);
+        return array_map(static fn(array $row): int => (int) $row['user_id'], $rows);
     }
 
     /** @return int[] */
@@ -181,7 +179,7 @@ final readonly class DiscountCodeRepository
             ->orderBy(['product_id' => SORT_ASC])
             ->all();
 
-        return array_map(static fn (array $row): int => (int) $row['product_id'], $rows);
+        return array_map(static fn(array $row): int => (int) $row['product_id'], $rows);
     }
 
     /** @param int[] $userIds */
