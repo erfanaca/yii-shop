@@ -3,14 +3,14 @@
 declare(strict_types=1);
 
 use App\User\User;
-use App\Admin\User\UserForm;
+use App\Admin\User\UpdateUserForm;
 use Yiisoft\FormModel\Field;
 use Yiisoft\Html\Html;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\View\WebView;
 use Yiisoft\Yii\View\Renderer\Csrf;
 
-/** @var UserForm $form */
+/** @var UpdateUserForm $form */
 /** @var User $user */
 /** @var WebView $this */
 /** @var UrlGeneratorInterface $urlGenerator */
@@ -49,11 +49,11 @@ $errorClass = 'mt-1.5 text-sm text-red-600';
             ?>
 
             <?= Field::password($form, 'password')
-                ->label('Password')
+                ->label('Password (leave blank to keep current password)')
                 ->labelClass($labelClass)
                 ->inputClass($inputClass)
                 ->errorClass($errorClass)
-                ->placeholder('At least 8 characters')
+                ->placeholder('Leave blank to keep current password')
                 ->addInputAttributes([
                     'autocomplete' => 'new-password',
                 ])

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Web\Admin\User\Edit;
 
-use App\Admin\User\UserForm;
+use App\Admin\User\UpdateUserForm;
 use App\Admin\User\UserRepository;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Yiisoft\Db\Exception\IntegrityException;
 use Yiisoft\FormModel\FormHydrator;
 use Yiisoft\Http\Status;
 use Yiisoft\Router\HydratorAttribute\RouteArgument;
@@ -34,21 +35,45 @@ final readonly class Action
         if ($user === null)
             return $this->responseFactory->createResponse(Status::NOT_FOUND);
 
-        $form = new UserForm();
+        $form = new UpdateUserForm();
 
         if ($request->getMethod() === 'GET') {
             $this->formHydrator->populate($form, ['email' => $user->getEmail()], scope: '');
         }
 
         if ($this->formHydrator->populateFromPostAndValidate($form, $request)) {
-            $this->users->update($user, $form->getEmail(), $this->passwordHasher->hash($form->getPassword()));
+            $email = strtolower(trim($form->getEmail() ?? ''));
 
-            return $this->responseFactory
-                ->createResponse(302)
-                ->withHeader(
-                    'Location',
-                    $this->urlGenerator->generate('admin/user/index')
-                );
+            if ($this->users->existsByEmail($email, (int) $user->getId())) {
+                $form->addError('This email is already registered.', ['email']);
+            } else {
+                try {
+                    $password = $form->getPassword();
+                    $passwordHash = $password === null || $password === ''
+                        ? null
+                        : $this->passwordHasher->hash($password);
+
+                    $this->users->update($user, $email, $passwordHash);
+                } catch (IntegrityException $exception) {
+                    if (!$this->users->existsByEmail($email, (int) $user->getId())) {
+                        throw $exception;
+                    }
+
+                    $form->addError('This email is already registered.', ['email']);
+
+                    return $this->viewRenderer->render(__DIR__ . '/template', [
+                        'form' => $form,
+                        'user' => $user,
+                    ]);
+                }
+
+                return $this->responseFactory
+                    ->createResponse(302)
+                    ->withHeader(
+                        'Location',
+                        $this->urlGenerator->generate('admin/user/index')
+                    );
+            }
         }
 
         return $this->viewRenderer->render(__DIR__ . '/template', [

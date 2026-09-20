@@ -7,10 +7,10 @@ use Yiisoft\Html\Html;
 use Yiisoft\Router\UrlGeneratorInterface;
 use Yiisoft\View\WebView;
 use Yiisoft\Yii\View\Renderer\Csrf;
-use App\Admin\User\UserForm;
+use App\Admin\User\CreateUserForm;
 
 /**
- * @var UserForm $form
+ * @var CreateUserForm $form
  * @var WebView $this
  * @var UrlGeneratorInterface $urlGenerator
  * @var Csrf $csrf

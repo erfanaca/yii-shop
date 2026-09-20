@@ -45,6 +45,23 @@ final class UserRepository
         );
     }
 
+    public function existsByEmail(string $email, ?int $excludeUserId = null): bool
+    {
+        $row = $this->db
+            ->createQuery()
+            ->select('id')
+            ->from('users')
+            ->where(['email' => $email])
+            ->limit(1)
+            ->one();
+
+        if ($row === null || $row === false) {
+            return false;
+        }
+
+        return $excludeUserId === null || (int) $row['id'] !== $excludeUserId;
+    }
+
     public function findById(int $id): ?User
     {
         $row = $this->db
@@ -61,17 +78,22 @@ final class UserRepository
         return $this->createUserFromRow($row);
     }
 
-    public function update(User $user, string $email, string $passwordHash): User
+    public function update(User $user, string $email, ?string $passwordHash = null): User
     {
         $updatedAt = new DateTimeImmutable();
 
+        $values = [
+            'email' => $email,
+            'updated_at' => $updatedAt,
+        ];
+
+        if ($passwordHash !== null) {
+            $values['password_hash'] = $passwordHash;
+        }
+
         $this->db
             ->createCommand()
-            ->update('users', [
-                'email' => $email,
-                'password_hash' => $passwordHash,
-                'updated_at' => $updatedAt,
-            ], [
+            ->update('users', $values, [
                 'id' => $user->getId(),
             ])
             ->execute();
@@ -79,7 +101,7 @@ final class UserRepository
         return new User(
             id: (int) $user->getId(),
             email: $email,
-            passwordHash: $passwordHash,
+            passwordHash: $passwordHash ?? $user->getPasswordHash(),
         );
     }
 
