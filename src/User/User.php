@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\User;
 
+use DateTimeImmutable;
 use Yiisoft\ActiveRecord\ActiveRecord;
 use Yiisoft\Auth\IdentityInterface;
 
@@ -12,6 +13,8 @@ final class User extends ActiveRecord implements IdentityInterface
     public ?int $id;
     public string $email;
     public string $password_hash;
+    public DateTimeImmutable $created_at;
+    public DateTimeImmutable $updated_at;
 
     public function tableName(): string
     {

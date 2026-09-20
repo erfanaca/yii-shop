@@ -16,8 +16,8 @@ final class Product extends ActiveRecord
     public ?string $description = null;
     public ?int $quantity = null;
     public ?string $price = null;
-    public DateTimeImmutable $createdAt;
-    public DateTimeImmutable $updatedAt;
+    public DateTimeImmutable $created_at;
+    public DateTimeImmutable $updated_at;
 
     public function tableName(): string
     {
@@ -83,11 +83,11 @@ final class Product extends ActiveRecord
 
     public function getCreatedAt(): DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
     public function getUpdatedAt(): ?DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 }
