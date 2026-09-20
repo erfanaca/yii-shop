@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace App\User;
 
+use Yiisoft\ActiveRecord\ActiveRecord;
 use Yiisoft\Auth\IdentityInterface;
 
-final class User implements IdentityInterface
+final class User extends ActiveRecord implements IdentityInterface
 {
-    public function __construct(
-        private readonly ?int $id,
-        private readonly string $email,
-        private readonly string $passwordHash,
-    ) {
+    public ?int $id;
+    public string $email;
+    public string $password_hash;
+
+    public function tableName(): string
+    {
+        return 'users';
     }
 
     public function getId(): ?string
     {
         return $this->id === null
             ? null
-            : (string) $this->id;
+            : (string)$this->id;
     }
 
     public function getEmail(): string
@@ -27,8 +30,18 @@ final class User implements IdentityInterface
         return $this->email;
     }
 
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+
     public function getPasswordHash(): string
     {
-        return $this->passwordHash;
+        return $this->password_hash;
+    }
+
+    public function setPasswordHash(string $passwordHash): void
+    {
+        $this->password_hash = $passwordHash;
     }
 }

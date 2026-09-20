@@ -9,32 +9,42 @@ use Yiisoft\Db\Connection\ConnectionInterface;
 
 final class RoleRepository
 {
-    public function __construct(private readonly ConnectionInterface $db) {}
+    public function __construct(private readonly ConnectionInterface $db)
+    {
+    }
 
     public function findAll(): array
     {
-        return array_map(fn($r) => new Role((int)$r['id'], (string)$r['title']), $this->db->createQuery()->from('roles')->all());
+        return Role::query()
+            ->all();
     }
 
     public function findById(int $id): ?Role
     {
-        $r = $this->db->createQuery()->from('roles')->where(['id' => $id])->one();
-        return $r ? new Role((int)$r['id'], (string)$r['title']) : null;
+        return Role::query()
+            ->where(['id' => $id])
+            ->one();
     }
 
     public function create(string $title): void
     {
-        $this->db->createCommand()->insert('roles', ['title' => $title])->execute();
+        $role = new Role();
+
+        $role->setTitle($title);
+
+        $role->save();
     }
 
     public function update(Role $role, string $title): void
     {
-        $this->db->createCommand()->update('roles', ['title' => $title], ['id' => $role->getId()])->execute();
+        $role->setTitle($title);
+
+        $role->save();
     }
 
     public function delete(Role $role): void
     {
-        $this->db->createCommand()->delete('roles', ['id' => $role->getId()])->execute();
+        $role->delete();
     }
 
     public function permissionIds(int $roleId): array
