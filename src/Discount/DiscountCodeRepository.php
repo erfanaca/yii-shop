@@ -8,7 +8,6 @@ use DateTimeImmutable;
 
 final readonly class DiscountCodeRepository
 {
-    /** @return DiscountCode[] */
     public function findAll(): array
     {
         return DiscountCode::query()
@@ -130,7 +129,7 @@ final readonly class DiscountCodeRepository
             $row->delete();
         }
 
-        foreach (array_values(array_unique(array_map('intval', $userIds))) as $userId) {
+        foreach ($userIds as $userId) {
             $row = new DiscountCodeUser();
             $row->discount_code_id = $discountCodeId;
             $row->user_id = $userId;
@@ -148,7 +147,7 @@ final readonly class DiscountCodeRepository
             $row->delete();
         }
 
-        foreach (array_values(array_unique(array_map('intval', $productIds))) as $productId) {
+        foreach ($productIds as $productId) {
             $row = new DiscountCodeProduct();
             $row->discount_code_id = $discountCodeId;
             $row->product_id = $productId;

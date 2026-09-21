@@ -22,13 +22,6 @@ final class CategoryRepository
             ->one();
     }
 
-    public function findByTitle(string $title): ?Category
-    {
-        return Category::query()
-            ->where(['title' => $title])
-            ->one();
-    }
-
     public function create(string $title): Category
     {
         $category = new Category();

@@ -98,7 +98,7 @@ final class ProductRepository
             $row->delete();
         }
 
-        foreach (array_values(array_unique(array_map('intval', $categoryIds))) as $categoryId) {
+        foreach ($categoryIds as $categoryId) {
             $productCategory = new ProductCategory();
             $productCategory->setProductId($productId);
             $productCategory->setCategoryId($categoryId);
@@ -115,7 +115,6 @@ final class ProductRepository
         $productImage->save();
     }
 
-    /** @return ProductImage[] */
     public function findImages(int $productId): array
     {
         return ProductImage::query()

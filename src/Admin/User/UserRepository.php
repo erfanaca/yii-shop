@@ -18,7 +18,6 @@ final class UserRepository
     ) {
     }
 
-    /** @return User[] */
     public function findAll(): array
     {
         return User::query()
@@ -89,8 +88,6 @@ final class UserRepository
 
     public function syncRoles(int $userId, array $roleIds): void
     {
-        $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
-
         $this->db->transaction(function () use ($userId, $roleIds): void {
             $rows = UserRole::query()
                 ->where(['user_id' => $userId])
@@ -111,8 +108,6 @@ final class UserRepository
 
     public function roleTitlesByUserIds(array $userIds): array
     {
-        $userIds = array_values(array_unique(array_map('intval', $userIds)));
-
         if ($userIds === []) {
             return [];
         }
@@ -126,7 +121,7 @@ final class UserRepository
         }
 
         $roleIds = array_values(array_unique(array_map(
-            static fn (UserRole $userRole): int => $userRole->role_id,
+            fn (UserRole $userRole): int => $userRole->role_id,
             $userRoles,
         )));
 

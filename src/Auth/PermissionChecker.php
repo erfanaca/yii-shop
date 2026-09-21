@@ -50,7 +50,7 @@ final readonly class PermissionChecker
         }
 
         $roleIds = array_map(
-            static fn (RolePermission $rolePermission): int => $rolePermission->role_id,
+            fn (RolePermission $rolePermission): int => $rolePermission->role_id,
             $rolePermissions,
         );
 

@@ -20,13 +20,6 @@ final class PermissionRepository
             ->one();
     }
 
-    public function findByTitle(string $title): ?Permission
-    {
-        return Permission::query()
-            ->where(['title' => $title])
-            ->one();
-    }
-
     public function create(string $title): void
     {
         $permission = new Permission();

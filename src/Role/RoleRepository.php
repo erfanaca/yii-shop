@@ -20,13 +20,6 @@ final class RoleRepository
             ->one();
     }
 
-    public function findByTitle(string $title): ?Role
-    {
-        return Role::query()
-            ->where(['title' => $title])
-            ->one();
-    }
-
     public function create(string $title): void
     {
         $role = new Role();
@@ -68,7 +61,7 @@ final class RoleRepository
             $row->delete();
         }
 
-        foreach (array_values(array_unique(array_map('intval', $ids))) as $permissionId) {
+        foreach ($ids as $permissionId) {
             $rolePermission = new RolePermission();
             $rolePermission->setRoleId($roleId);
             $rolePermission->setPermissionId($permissionId);
