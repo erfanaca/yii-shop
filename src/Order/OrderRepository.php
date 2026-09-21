@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Order;
 
+use App\Order\Behavior\OrderCompletionBehavior;
 use DateTimeImmutable;
 use RuntimeException;
 
@@ -96,5 +97,12 @@ final readonly class OrderRepository
         }
 
         throw new RuntimeException('Unable to generate a unique order reference.');
+    }
+
+    public function findById(int $id): ?Order
+    {
+        return Order::query()
+            ->where(['id' => $id])
+            ->one();
     }
 }

@@ -7,8 +7,11 @@ namespace App\Order;
 use App\Cart\CartService;
 use App\Discount\CartDiscountService;
 use App\Discount\DiscountApplicationException;
+use App\Order\Event\OrderCompleted;
 use App\Product\ProductRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Yiisoft\Db\Connection\ConnectionInterface;
+
 
 final readonly class CheckoutService
 {
@@ -18,6 +21,7 @@ final readonly class CheckoutService
         private OrderRepository $orders,
         private ProductRepository $products,
         private CartDiscountService $discounts,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -94,6 +98,13 @@ final readonly class CheckoutService
 
             $paidOrder = $this->orders->changeStatus($order, OrderStatus::Paid);
             $this->cartService->complete($userId);
+
+            $this->eventDispatcher->dispatch(
+                new OrderCompleted(
+                    orderId: $order->getId(),
+                    userId: $order->getUserId(),
+                ),
+            );
 
             return $paidOrder;
         });
